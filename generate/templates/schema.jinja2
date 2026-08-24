@@ -1,0 +1,28 @@
+from dataclasses import dataclass
+from typing import ClassVar, Optional, Type
+
+from {{import_path}}.model import (
+{%- for class in classes %}
+    {{ class.class_name }} as {{ class.class_name }}Model,
+{%- endfor %}
+)
+
+from {{import_path}}.entity import (
+{%- for class in classes %}
+    {{ class.class_name }} as {{ class.class_name }}Entity,
+{%- endfor %}
+)
+
+@dataclass
+class SchemaClass:
+    model_class: ClassVar[Type]
+    entity_class: ClassVar[Type]
+    api_resource_name: ClassVar[Optional[str]]
+
+{% for class in classes %}
+@dataclass
+class {{ class.class_name }}(SchemaClass):
+    model_class = {{ class.class_name }}Model
+    entity_class = {{ class.class_name }}Entity
+    api_resource_name = {{ ('"' ~ class.api_resource_name ~ '"') if class.api_resource_name is string else None }}
+{% endfor %}
