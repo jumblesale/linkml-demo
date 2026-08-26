@@ -15,6 +15,8 @@ And the following annotations for slots:
 - write_model: boolean - does this slot exist in the request sent to the API?
 - read_model: boolean - does this slot exist in the response from the API?
 
+Relationships should not appear in the read or write models - they should have read_model and write_model set to false.
+
 ## Entities
 
 ### Model
@@ -33,9 +35,8 @@ The base class of a human being.
 ### Person slots
 
 - name
-- gender
-- date_of_birth - an ISO-formatted date of when this human was born
-- email
+- gender - optional
+- date_of_birth - an ISO-formatted date of when this human was born, optional
 
 ### Book
 
@@ -78,6 +79,7 @@ A customer of the bookstore. is_a Person.
 
 #### User slots
 
+- email - the user's email address
 - has_bought: a collection of books which this user has bought
 - reviews: a collection of reviews the user has submitted
 

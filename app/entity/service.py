@@ -1,18 +1,18 @@
-from bookstore.generated.model import Model
+from bookstore.generated.dto import DTOCreate
 from bookstore.generated.schema import SchemaClass
-from bookstore.repository import Repository
+from app.entity.repository import EntityRepository
 
 
 class EntityService:
     def __init__(
         self,
-        repository: Repository,
+        repository: EntityRepository,
     ):
         self.repository = repository
 
     def create(
         self,
         schema_class: type[SchemaClass],
-        model: Model,
+        payload: DTOCreate,
     ):
         ...

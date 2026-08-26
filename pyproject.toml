@@ -9,4 +9,5 @@ dependencies = [
     "fastapi==0.141.1",
     "linkml-runtime==1.11.1",
     "sqlalchemy==2.0.52",
+    "uvicorn[standard]>=0.52.4",
 ]

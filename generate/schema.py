@@ -1,11 +1,16 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 from jinja2 import Template
 from linkml_runtime.utils.schemaview import ClassDefinition, ClassDefinitionName, SchemaView, SlotDefinition
 from linkml.generators.sqlalchemygen import SQLAlchemyGenerator, TemplateEnum
 from linkml.generators.pythongen import PythonGenerator
+
+
+REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
+MODULE_NAME = "bookstore"
+MODULE_PATH = REPOSITORY_ROOT / MODULE_NAME
 
 
 @dataclass
@@ -24,13 +29,13 @@ def _template(template_file: str) -> Template:
 def _render_sql_alchemy(schema_path: Path):
     generator = SQLAlchemyGenerator(schema=schema_path)
 
-    Path("bookstore/generated/entity.py").write_text(
+    (MODULE_PATH / "generated/entity.py").write_text(
         generator.generate_sqla(template=TemplateEnum.DECLARATIVE_2X)
     )
 
 def _render_model(schema_path: Path):
     generator = PythonGenerator(schema_path)
-    Path("bookstore/generated/domain.py").write_text(generator.serialize())
+    (MODULE_PATH / "generated/domain.py").write_text(generator.serialize())
 
 @dataclass
 class DTOSlot:
@@ -40,10 +45,15 @@ class DTOSlot:
 
 
 @dataclass
+class DTOModel:
+    name: Literal["Read", "Create"]
+    slots: list[DTOSlot]
+
+
+@dataclass
 class DTO:
     name: str
-    write_slots: list[DTOSlot]
-    read_slots: list[DTOSlot]
+    models: list[DTOModel]
 
 def _render_dtos(schema_view: SchemaView):
     python_generator = PythonGenerator(schema_view.schema)
@@ -108,11 +118,13 @@ def _render_dtos(schema_view: SchemaView):
         )
         dtos.append(DTO(
             name=class_name,
-            write_slots=write_slots,
-            read_slots=read_slots,
+            models=[
+                DTOModel(name="Create", slots=write_slots),
+                DTOModel(name="Read", slots=read_slots),
+            ],
         ))
     template = _template("dto")
-    Path("bookstore/generated/dto.py").write_text(template.render(
+    (MODULE_PATH / "generated/dto.py").write_text(template.render(
         dtos=dtos
     ))
 
@@ -156,13 +168,13 @@ def render(schema_path: Path):
             has_read_model=class_name in api_class_names,
         ))
     template = _template("schema")
-    Path("bookstore/generated/schema.py").write_text(
+    (MODULE_PATH / "generated/schema.py").write_text(
         template.render(
-            import_path="bookstore.generated",
-            classes=schema_items
+            import_path=f"{MODULE_PATH.name}.generated",
+            classes=schema_items,
         ))
     
 
 if __name__ == "__main__":
-    schema_path = Path(__file__).parent.parent / "schema" / "bookstore.yaml"
+    schema_path = REPOSITORY_ROOT / "schema" / f"{MODULE_PATH.name}.yaml"
     render(schema_path=schema_path)

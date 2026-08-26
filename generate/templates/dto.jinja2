@@ -10,9 +10,10 @@ class DTOCreate(DTO): ...
 @dataclass
 class DTORead(DTO): ...
 {% for class in dtos %}
-{% for suffix in ["Create", "Read"] %}
-class {{ class.name }}{{ suffix }}(DTO{{ suffix }}):
-{%- for slot in class["write_slots" if suffix == "Create" else "read_slots"] %}
+{% for model in class.models %}
+@dataclass
+class {{ class.name }}{{ model.name }}(DTO{{ model.name }}):
+{%- for slot in model.slots %}
     {{ slot.name }}: {{ slot.python_type }}
 {%- else %}
     ...
