@@ -73,11 +73,19 @@ def _render_dtos(schema_view: SchemaView):
     }
 
     def _python_type(slot: SlotDefinition) -> str:
-        if slot.range in class_names or slot.range in enum_names:
-            base_type = "str"
-        else:
-            range_name = python_generator._roll_up_type(slot.range)
-            base_type = primitive_types.get(range_name, "str")
+        match slot.range:
+            case range_name if range_name in enum_names:
+                enum_definition = schema_view.get_enum(range_name)
+                values = ", ".join(
+                    repr(value)
+                    for value in enum_definition.permissible_values.keys()
+                )
+                base_type = f"Literal[{values}]"
+            case range_name if range_name in class_names:
+                base_type = "str"
+            case range_name:
+                range_name = python_generator._roll_up_type(range_name)
+                base_type = primitive_types.get(range_name, "str")
 
         if slot.multivalued:
             base_type = f"list[{base_type}]"

@@ -45,6 +45,10 @@ class RelationshipSchemaClass:
     def entity_name(cls) -> str:
         return cls.__name__.lower()
 
+    @classmethod
+    def entity_field_names(cls) -> set[str]:
+        return set(cls.entity_class.__mapper__.attrs.keys())
+
 @dataclass
 class SchemaClassAddressable(RelationshipSchemaClass):
     write_model: ClassVar[Type[DTOCreate]]

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import date, datetime
+from typing import Literal
 
 @dataclass
 class DTO: ...
@@ -15,13 +16,13 @@ class DTORead(DTO): ...
 class BookCreate(DTOCreate):
     title: str
     ISBN: str
-    genre: str
+    genre: Literal['Sci-fi', 'Fantasy', 'Crime', 'Thriller', 'Non-fiction', 'Biography']
 
 @dataclass
 class BookRead(DTORead):
     title: str
     ISBN: str
-    genre: str
+    genre: Literal['Sci-fi', 'Fantasy', 'Crime', 'Thriller', 'Non-fiction', 'Biography']
     id: str
 
 

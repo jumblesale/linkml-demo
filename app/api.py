@@ -34,6 +34,7 @@ class Api:
             )
             location = f"/{schema_class.api_resource_name}/{quote(entity_id, safe='')}"
             return Response(
+                status_code=HTTPStatus.CREATED,
                 headers={"Location": location},
             )
 
@@ -78,6 +79,7 @@ class Api:
                 tags=[schema_class.__name__],
                 status_code=HTTPStatus.CREATED,
             )(self.post_handler(schema_class))
+            
             self.app.get(
                 f"/{schema_class.api_resource_name}",
                 name=f"get_all_{schema_class.api_resource_name}",

@@ -67,11 +67,10 @@ class DomainEntityConverter:
         schema_class: type[SchemaClassAddressable],
         domain: DomainModel,
     ) -> Base:
-        entity_fields = schema_class.entity_class.__mapper__.attrs.keys()
         return map_fields(
             source=domain,
             target_class=schema_class.entity_class,
-            field_names=entity_fields,
+            field_names=schema_class.entity_field_names(),
         )
 
     def to_domain(
@@ -79,9 +78,8 @@ class DomainEntityConverter:
         schema_class: type[SchemaClassAddressable],
         entity: Base,
     ) -> DomainModel:
-        entity_fields = schema_class.entity_class.__mapper__.attrs.keys()
         return map_fields(
             source=entity,
             target_class=schema_class.model_class,
-            field_names=entity_fields,
+            field_names=schema_class.entity_field_names(),
         )
