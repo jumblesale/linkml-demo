@@ -1,5 +1,8 @@
 # Bookstore schema
 
+Written by: human
+Target audience: human, AI agent
+
 This file describes the schema of a fictional bookstore. It describes the entities and relationships between the entities in natural language. It is intended as the input to create a LinkML schema. The schema should reside in schema/bookstore.yaml.
 
 The schema metadata must be:
