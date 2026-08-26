@@ -9,7 +9,11 @@ from bookstore.generated.entity import Base
 from bookstore.generated.schema import RelationshipMetadata, SchemaClassAddressable
 from app.entity.id import Identifier
 from app.entity.mappers import DomainEntityConverter
-from app.entity.exceptions import RelatedEntityNotFound, UniqueConstraintViolation
+from app.entity.exceptions import (
+    EntityNotFound,
+    RelatedEntityNotFound,
+    UniqueConstraintViolation,
+)
 
 
 class EntityRepository:
@@ -35,6 +39,19 @@ class EntityRepository:
                 raise
             field = self._unique_field(entity, error)
             raise UniqueConstraintViolation(field) from error
+
+    def delete(
+        self,
+        schema_class: type[SchemaClassAddressable],
+        entity_id: Identifier,
+    ) -> None:
+        existing_entity = self.session.get(
+            schema_class.entity_class,
+            entity_id,
+        )
+        if existing_entity is None:
+            raise EntityNotFound(schema_class.entity_name(), entity_id)
+        self.session.delete(existing_entity)
 
     def _resolve_relationships(
         self,
@@ -136,7 +153,7 @@ class EntityRepository:
     def find_by_id(
         self,
         schema_class: type[SchemaClassAddressable],
-        entity_id: str,
+        entity_id: Identifier,
     ) -> DomainModel | None:
         entity = self.session.get(schema_class.entity_class, entity_id)
         if entity is None:

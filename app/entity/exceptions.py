@@ -11,3 +11,10 @@ class RelatedEntityNotFound(Exception):
         )
         self.relationship = relationship
         self.entity_id = entity_id
+
+
+class EntityNotFound(Exception):
+    def __init__(self, entity_name: str, entity_id: str):
+        super().__init__(f"No {entity_name} with id '{entity_id}' was found")
+        self.entity_name = entity_name
+        self.entity_id = entity_id

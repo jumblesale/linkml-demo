@@ -53,3 +53,13 @@ class EntityService:
             self.converter.to_dto(schema_class, model)
             for model in self.repository.find_all(schema_class)
         ]
+
+    def delete(
+        self,
+        schema_class: type[SchemaClassAddressable],
+        entity_id: Identifier,
+    ) -> None:
+        self.repository.delete(
+            schema_class=schema_class,
+            entity_id=entity_id,
+        )

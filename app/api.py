@@ -8,7 +8,11 @@ from pydantic import BaseModel
 
 from bookstore.generated.schema import SchemaClassAddressable
 from app.entity.service import EntityService
-from app.entity.exceptions import RelatedEntityNotFound, UniqueConstraintViolation
+from app.entity.exceptions import (
+    EntityNotFound,
+    RelatedEntityNotFound,
+    UniqueConstraintViolation,
+)
 
 
 class ConflictResponse(BaseModel):
@@ -36,6 +40,10 @@ class Api:
             RelatedEntityNotFound,
             self.related_entity_not_found_handler,
         )
+        self.app.add_exception_handler(
+            EntityNotFound,
+            self.entity_not_found_handler,
+        )
         self.register_handlers()
 
     @staticmethod
@@ -61,6 +69,17 @@ class Api:
                 "relationship": exception.relationship,
                 "id": exception.entity_id,
             },
+        )
+
+    @staticmethod
+    async def entity_not_found_handler(
+        _: Request,
+        exception: Exception,
+    ) -> JSONResponse:
+        assert isinstance(exception, EntityNotFound)
+        return JSONResponse(
+            status_code=HTTPStatus.NOT_FOUND,
+            content={"detail": str(exception)},
         )
 
 
@@ -119,6 +138,23 @@ class Api:
         _get_all_handler.__name__ = f"get_all_{schema_class.api_resource_name}"
         return _get_all_handler
 
+    def delete_handler(
+        self,
+        schema_class: type[SchemaClassAddressable],
+    ):
+        def _delete_handler(
+            entity_id: str,
+            service: EntityService = Depends(self.service_dependency),
+        ):
+            service.delete(
+                schema_class=schema_class,
+                entity_id=entity_id,
+            )
+            return Response(status_code=HTTPStatus.NO_CONTENT)
+
+        _delete_handler.__name__ = f"delete_{schema_class.api_resource_name}"
+        return _delete_handler
+
     def register_handlers(
         self,
     ):
@@ -152,3 +188,11 @@ class Api:
                 tags=[schema_class.__name__],
                 response_model=schema_class.read_model,
             )(self.get_handler(schema_class))
+
+            self.app.delete(
+                f"/{schema_class.api_resource_name}/{{entity_id}}",
+                name=f"delete_{schema_class.api_resource_name}",
+                summary=f"Delete a {schema_class.entity_name()} by id",
+                tags=[schema_class.__name__],
+                status_code=HTTPStatus.NO_CONTENT,
+            )(self.delete_handler(schema_class))
