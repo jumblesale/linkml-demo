@@ -32,7 +32,7 @@ class EntityService:
             entity_id=(id := self.id_generator()),
             created_at=datetime.now(timezone.utc),
         )
-        self.validator.validate(model)
+        self.validator.validate(schema_class, model)
         self.repository.save(schema_class, model)
         return id
 

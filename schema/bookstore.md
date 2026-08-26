@@ -70,7 +70,7 @@ A book sold by the bookstore.
 
 - title - a required string present in both the write_model and read_model. It must be unique within Book. Add a `unique_keys` entry named `unique_title` containing `title`.
 - ISBN - a required string containing exactly 13 ASCII digits. Use the pattern `^[0-9]{13}$`. It must be present in both the write_model and read_model. It must be unique within Book. Add a `unique_keys` entry named `unique_isbn` containing `ISBN`.
-- authors - a non-empty collection of authors of the book. It has range `Author`, is multivalued, and has minimum cardinality 1. It must not appear in either API model.
+- authors - a non-empty collection of author IDs for the book. It has range `Author`, is multivalued, and has minimum cardinality 1. It appears in both the write_model and read_model, and each value references an existing Author.
 - publisher - an optional single-valued reference with range `Publisher`. It must not appear in either API model.
 - genre - a required value from the `Genre` enumeration, present in both the write_model and read_model:
   - Sci-fi

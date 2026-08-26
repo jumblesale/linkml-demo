@@ -5,22 +5,68 @@ from typing import Any
 from fastapi.exceptions import RequestValidationError
 
 from bookstore.generated.domain import Model, slots
+from bookstore.generated.schema import SchemaClassAddressable
 
 
 class ModelValidator:
-    def validate(self, model: Model) -> None:
+    def validate(
+        self,
+        schema_class: type[SchemaClassAddressable],
+        model: Model,
+    ) -> None:
         instance = asdict(model)
         errors = [
             error
             for field in fields(model)
             for error in self._validate_field(model, field)
         ]
+        errors.extend(self._validate_relationships(schema_class, model))
 
         if errors:
             raise RequestValidationError(
                 errors,
                 body=instance,
             )
+
+    @staticmethod
+    def _validate_relationships(
+        schema_class: type[SchemaClassAddressable],
+        model: Model,
+    ) -> list[dict[str, Any]]:
+        errors = []
+        for name, relationship in schema_class.relationships.items():
+            minimum = relationship.minimum_cardinality
+            if minimum is None:
+                continue
+            value = getattr(model, name, None)
+            count = (
+                len(value)
+                if isinstance(value, list)
+                else int(value is not None)
+            )
+            if count < minimum:
+                errors.append(
+                    ModelValidator._cardinality_error(
+                        field_name=name,
+                        value=value,
+                        minimum=minimum,
+                    )
+                )
+        return errors
+
+    @staticmethod
+    def _cardinality_error(
+        field_name: str,
+        value: Any,
+        minimum: int,
+    ) -> dict[str, Any]:
+        return ModelValidator._validation_error(
+            error_type="too_short",
+            location=("body", field_name),
+            message=f"List should have at least {minimum} item(s)",
+            value=value,
+            context={"min_length": minimum},
+        )
 
     def _validate_field(
         self,
@@ -68,10 +114,26 @@ class ModelValidator:
         value: Any,
         location: tuple[Any, ...],
     ) -> dict[str, Any]:
+        return ModelValidator._validation_error(
+            error_type="string_pattern_mismatch",
+            location=location,
+            message=f"String should match pattern '{pattern.pattern}'",
+            value=value,
+            context={"pattern": pattern.pattern},
+        )
+
+    @staticmethod
+    def _validation_error(
+        error_type: str,
+        location: tuple[Any, ...],
+        message: str,
+        value: Any,
+        context: dict[str, Any],
+    ) -> dict[str, Any]:
         return {
-            "type": "string_pattern_mismatch",
+            "type": error_type,
             "loc": location,
-            "msg": f"String should match pattern '{pattern.pattern}'",
+            "msg": message,
             "input": value,
-            "ctx": {"pattern": pattern.pattern},
+            "ctx": context,
         }

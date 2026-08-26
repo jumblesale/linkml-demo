@@ -26,10 +26,17 @@ from {{import_path}}.dto import (
 {%- endfor %}
 )
 
+@dataclass(frozen=True)
+class RelationshipMetadata:
+    target_class_name: str
+    multivalued: bool
+    minimum_cardinality: int | None
+
 @dataclass
 class RelationshipSchemaClass:
     model_class: ClassVar[Type]
     entity_class: ClassVar[Type]
+    relationships: ClassVar[dict[str, RelationshipMetadata]]
 
     @classmethod
     def entity_name(cls) -> str:
@@ -50,6 +57,15 @@ class SchemaClassAddressable(RelationshipSchemaClass):
 class {{ class.class_name }}({{ "SchemaClassAddressable" if class.is_addressable else "RelationshipSchemaClass" }}):
     model_class = {{ class.class_name }}Model
     entity_class = {{ class.class_name }}Entity
+    relationships = {
+{%- for relationship in class.relationships %}
+        "{{ relationship.name }}": RelationshipMetadata(
+            target_class_name="{{ relationship.target_class_name }}",
+            multivalued={{ relationship.multivalued }},
+            minimum_cardinality={{ relationship.minimum_cardinality }},
+        ),
+{%- endfor %}
+    }
     {%- if class.is_addressable %}
     write_model = {{ class.class_name }}Create
     read_model = {{ class.class_name }}Read

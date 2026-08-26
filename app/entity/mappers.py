@@ -80,24 +80,55 @@ class DtoDomainConverter:
 
 
 class DomainEntityConverter:
+    @staticmethod
+    def _orm_relationship_names(
+        schema_class: type[SchemaClassAddressable],
+    ) -> set[str]:
+        return set(schema_class.entity_class.__mapper__.relationships.keys())
+
     def to_entity(
         self,
         schema_class: type[SchemaClassAddressable],
         domain: DomainModel,
+        relationship_values: dict[str, Any] | None = None,
     ) -> Base:
-        return map_fields(
+        relationship_names = (
+            set(schema_class.relationships)
+            & self._orm_relationship_names(schema_class)
+        )
+        entity = map_fields(
             source=domain,
             target_class=schema_class.entity_class,
-            field_names=schema_class.entity_field_names(),
+            field_names=schema_class.entity_field_names() - relationship_names,
         )
+        for name in relationship_names:
+            if relationship_values is None or name not in relationship_values:
+                continue
+            setattr(entity, name, relationship_values[name])
+        return entity
 
     def to_domain(
         self,
         schema_class: type[SchemaClassAddressable],
         entity: Base,
     ) -> DomainModel:
+        relationship_names = (
+            set(schema_class.relationships)
+            & self._orm_relationship_names(schema_class)
+        )
+        overrides = {}
+        for name, relationship in schema_class.relationships.items():
+            if name not in relationship_names:
+                continue
+            value = getattr(entity, name, None)
+            if value is None:
+                continue
+            values = value if relationship.multivalued else [value]
+            ids = [related_entity.id for related_entity in values]
+            overrides[name] = ids if relationship.multivalued else ids[0]
         return map_fields(
             source=entity,
             target_class=schema_class.model_class,
-            field_names=schema_class.entity_field_names(),
+            field_names=schema_class.entity_field_names() - relationship_names,
+            **overrides,
         )

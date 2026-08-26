@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from bookstore.generated.schema import SchemaClassAddressable
 from app.entity.service import EntityService
-from app.entity.exceptions import UniqueConstraintViolation
+from app.entity.exceptions import RelatedEntityNotFound, UniqueConstraintViolation
 
 
 class ConflictResponse(BaseModel):
@@ -32,6 +32,10 @@ class Api:
             UniqueConstraintViolation,
             self.unique_constraint_handler,
         )
+        self.app.add_exception_handler(
+            RelatedEntityNotFound,
+            self.related_entity_not_found_handler,
+        )
         self.register_handlers()
 
     @staticmethod
@@ -39,11 +43,24 @@ class Api:
         _: Request,
         exception: Exception,
     ) -> JSONResponse:
-        if not isinstance(exception, UniqueConstraintViolation):
-            raise exception
+        assert isinstance(exception, UniqueConstraintViolation)
         return JSONResponse(
             status_code=HTTPStatus.CONFLICT,
             content={"field": exception.field},
+        )
+
+    @staticmethod
+    async def related_entity_not_found_handler(
+        _: Request,
+        exception: Exception,
+    ) -> JSONResponse:
+        assert isinstance(exception, RelatedEntityNotFound)
+        return JSONResponse(
+            status_code=HTTPStatus.NOT_FOUND,
+            content={
+                "relationship": exception.relationship,
+                "id": exception.entity_id,
+            },
         )
 
 

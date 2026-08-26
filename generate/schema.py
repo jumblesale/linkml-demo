@@ -18,6 +18,15 @@ class SchemaItem:
     class_name: str
     api_resource_name: Optional[str]
     is_addressable: bool
+    relationships: list["RelationshipItem"]
+
+
+@dataclass
+class RelationshipItem:
+    name: str
+    target_class_name: str
+    multivalued: bool
+    minimum_cardinality: int | None
 
 
 def _template(template_file: str) -> Template:
@@ -123,7 +132,7 @@ def _render_dtos(schema_view: SchemaView):
 
         if slot.multivalued:
             base_type = f"list[{base_type}]"
-        if not slot.required:
+        if not slot.required and (slot.minimum_cardinality or 0) < 1:
             base_type = f"{base_type} | None"
         return base_type
 
@@ -198,15 +207,28 @@ def render(schema_path: Path):
         for class_name, _ in _api_schema_classes(schema_view=schema_view)
     }
     schema_items = []
+    class_names = {str(class_name) for class_name, _ in _schema_classes(schema_view)}
     for class_name, class_definition in _schema_classes(schema_view=schema_view):
         api_resource_name = (
             None if "api_resource_name" not in class_definition.annotations.keys() 
             else class_definition.annotations["api_resource_name"].value
         )
+        relationships = []
+        for slot_name in schema_view.class_slots(class_name):
+            slot = schema_view.get_slot(slot_name)
+            if slot is None or str(slot.range) not in class_names:
+                continue
+            relationships.append(RelationshipItem(
+                name=slot.name,
+                target_class_name=str(slot.range),
+                multivalued=slot.multivalued is True,
+                minimum_cardinality=slot.minimum_cardinality,
+            ))
         schema_items.append(SchemaItem(
             class_name=class_name,
             api_resource_name=api_resource_name,
             is_addressable=class_name in api_class_names,
+            relationships=relationships,
         ))
     template = _template("schema")
     (MODULE_PATH / "generated/schema.py").write_text(

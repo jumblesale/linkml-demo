@@ -148,8 +148,8 @@ slots:
     multivalued: true
     minimum_cardinality: 1
     annotations:
-      write_model: false
-      read_model: false
+      write_model: true
+      read_model: true
 
   publisher:
     description: Publisher of the book.

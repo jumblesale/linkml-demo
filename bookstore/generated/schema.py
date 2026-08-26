@@ -36,10 +36,17 @@ from bookstore.generated.dto import (
     ReviewCreate,
 )
 
+@dataclass(frozen=True)
+class RelationshipMetadata:
+    target_class_name: str
+    multivalued: bool
+    minimum_cardinality: int | None
+
 @dataclass
 class RelationshipSchemaClass:
     model_class: ClassVar[Type]
     entity_class: ClassVar[Type]
+    relationships: ClassVar[dict[str, RelationshipMetadata]]
 
     @classmethod
     def entity_name(cls) -> str:
@@ -60,16 +67,37 @@ class SchemaClassAddressable(RelationshipSchemaClass):
 class Model(RelationshipSchemaClass):
     model_class = ModelModel
     entity_class = ModelEntity
+    relationships = {
+    }
 
 @dataclass
 class Person(RelationshipSchemaClass):
     model_class = PersonModel
     entity_class = PersonEntity
+    relationships = {
+    }
 
 @dataclass
 class Book(SchemaClassAddressable):
     model_class = BookModel
     entity_class = BookEntity
+    relationships = {
+        "authors": RelationshipMetadata(
+            target_class_name="Author",
+            multivalued=True,
+            minimum_cardinality=1,
+        ),
+        "publisher": RelationshipMetadata(
+            target_class_name="Publisher",
+            multivalued=False,
+            minimum_cardinality=None,
+        ),
+        "reviews": RelationshipMetadata(
+            target_class_name="Review",
+            multivalued=True,
+            minimum_cardinality=0,
+        ),
+    }
     write_model = BookCreate
     read_model = BookRead
     api_resource_name = "books"
@@ -78,6 +106,13 @@ class Book(SchemaClassAddressable):
 class Author(SchemaClassAddressable):
     model_class = AuthorModel
     entity_class = AuthorEntity
+    relationships = {
+        "books_published": RelationshipMetadata(
+            target_class_name="Book",
+            multivalued=True,
+            minimum_cardinality=0,
+        ),
+    }
     write_model = AuthorCreate
     read_model = AuthorRead
     api_resource_name = "authors"
@@ -86,6 +121,8 @@ class Author(SchemaClassAddressable):
 class Publisher(SchemaClassAddressable):
     model_class = PublisherModel
     entity_class = PublisherEntity
+    relationships = {
+    }
     write_model = PublisherCreate
     read_model = PublisherRead
     api_resource_name = "publishers"
@@ -94,6 +131,18 @@ class Publisher(SchemaClassAddressable):
 class User(SchemaClassAddressable):
     model_class = UserModel
     entity_class = UserEntity
+    relationships = {
+        "has_bought": RelationshipMetadata(
+            target_class_name="Book",
+            multivalued=True,
+            minimum_cardinality=0,
+        ),
+        "reviews": RelationshipMetadata(
+            target_class_name="Review",
+            multivalued=True,
+            minimum_cardinality=0,
+        ),
+    }
     write_model = UserCreate
     read_model = UserRead
     api_resource_name = "users"
@@ -102,6 +151,13 @@ class User(SchemaClassAddressable):
 class Review(SchemaClassAddressable):
     model_class = ReviewModel
     entity_class = ReviewEntity
+    relationships = {
+        "user": RelationshipMetadata(
+            target_class_name="User",
+            multivalued=False,
+            minimum_cardinality=None,
+        ),
+    }
     write_model = ReviewCreate
     read_model = ReviewRead
     api_resource_name = "reviews"
