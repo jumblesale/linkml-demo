@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import ClassVar, Optional, Type
 
-from {{import_path}}.model import (
+from {{import_path}}.domain import (
 {%- for class in classes %}
     {{ class.class_name }} as {{ class.class_name }}Model,
 {%- endfor %}
@@ -13,10 +13,25 @@ from {{import_path}}.entity import (
 {%- endfor %}
 )
 
+from {{import_path}}.dto import (
+    DTOCreate,
+    DTORead,
+{%- for class in classes %}
+{%- if class.has_read_model %}
+    {{ class.class_name }}Read,
+{%- endif %}
+{%- if class.has_write_model %}
+    {{ class.class_name }}Create,
+{%- endif %}
+{%- endfor %}
+)
+
 @dataclass
 class SchemaClass:
     model_class: ClassVar[Type]
     entity_class: ClassVar[Type]
+    write_model: ClassVar[Optional[Type[DTOCreate]]]
+    read_model: ClassVar[Optional[Type[DTORead]]]
     api_resource_name: ClassVar[Optional[str]]
 
 {% for class in classes %}
@@ -24,5 +39,15 @@ class SchemaClass:
 class {{ class.class_name }}(SchemaClass):
     model_class = {{ class.class_name }}Model
     entity_class = {{ class.class_name }}Entity
+    {%- if class.has_write_model %}
+    write_model = {{ class.class_name }}Create
+    {%- else %}
+    write_model = None
+    {%- endif %}
+    {%- if class.has_read_model %}
+    read_model = {{ class.class_name }}Read
+    {%- else %}
+    read_model = None
+    {%- endif %}
     api_resource_name = {{ ('"' ~ class.api_resource_name ~ '"') if class.api_resource_name is string else None }}
 {% endfor %}

@@ -8,6 +8,8 @@ anyio==4.14.2
     # via starlette
 fastapi==0.141.1
     # via link-ml-demo (pyproject.toml)
+linkml-runtime==1.11.1
+    # via link-ml-demo (pyproject.toml)
 idna==3.18
     # via anyio
 pydantic==2.13.4
@@ -15,6 +17,8 @@ pydantic==2.13.4
 pydantic-core==2.46.4
     # via pydantic
 ruff==0.16.3
+    # via link-ml-demo (pyproject.toml)
+sqlalchemy==2.0.52
     # via link-ml-demo (pyproject.toml)
 starlette==1.6.0
     # via fastapi

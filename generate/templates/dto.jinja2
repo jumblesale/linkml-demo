@@ -1,0 +1,20 @@
+from dataclasses import dataclass
+from datetime import date, datetime
+
+@dataclass
+class DTO: ...
+
+@dataclass
+class DTOCreate(DTO): ...
+
+@dataclass
+class DTORead(DTO): ...
+{% for class in dtos %}
+{% for suffix in ["Create", "Read"] %}
+class {{ class.name }}{{ suffix }}(DTO{{ suffix }}):
+{%- for slot in class["write_slots" if suffix == "Create" else "read_slots"] %}
+    {{ slot.name }}: {{ slot.python_type }}
+{%- else %}
+    ...
+{%- endfor %}
+{% endfor %}{% endfor %}
