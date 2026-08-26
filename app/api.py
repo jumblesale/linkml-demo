@@ -2,11 +2,17 @@ from http import HTTPStatus
 from collections.abc import Callable
 from urllib.parse import quote
 
-from fastapi import Depends, FastAPI, HTTPException, Response
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 from bookstore.generated.schema import SchemaClassAddressable
 from app.entity.service import EntityService
+from app.entity.exceptions import UniqueConstraintViolation
+
+
+class ConflictResponse(BaseModel):
+    field: str
 
 def _schema_classes() -> list[type[SchemaClassAddressable]]:
     return [
@@ -22,7 +28,23 @@ class Api:
     ):
         self.app = app
         self.service_dependency = service_dependency
+        self.app.add_exception_handler(
+            UniqueConstraintViolation,
+            self.unique_constraint_handler,
+        )
         self.register_handlers()
+
+    @staticmethod
+    async def unique_constraint_handler(
+        _: Request,
+        exception: Exception,
+    ) -> JSONResponse:
+        if not isinstance(exception, UniqueConstraintViolation):
+            raise exception
+        return JSONResponse(
+            status_code=HTTPStatus.CONFLICT,
+            content={"field": exception.field},
+        )
 
 
     def post_handler(
@@ -90,6 +112,12 @@ class Api:
                 summary=f"Create a new {schema_class.entity_name()}",
                 tags=[schema_class.__name__],
                 status_code=HTTPStatus.CREATED,
+                responses={
+                    HTTPStatus.CONFLICT: {
+                        "model": ConflictResponse,
+                        "description": "A unique field value already exists.",
+                    },
+                },
             )(self.post_handler(schema_class))
             
             self.app.get(
