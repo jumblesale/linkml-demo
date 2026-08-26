@@ -10,6 +10,10 @@ fastapi==0.141.1
     # via link-ml-demo (pyproject.toml)
 linkml-runtime==1.11.1
     # via link-ml-demo (pyproject.toml)
+psycopg==3.3.3
+    # via link-ml-demo (pyproject.toml)
+psycopg-binary==3.3.3
+    # via psycopg (pyproject.toml)
 idna==3.18
     # via anyio
 pydantic==2.13.4

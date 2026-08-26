@@ -1,7 +1,8 @@
 from http import HTTPStatus
+from collections.abc import Callable
 from urllib.parse import quote
 
-from fastapi import FastAPI, HTTPException, Response
+from fastapi import Depends, FastAPI, HTTPException, Response
 from fastapi.responses import JSONResponse
 
 from bookstore.generated.schema import SchemaClassAddressable
@@ -17,10 +18,10 @@ class Api:
     def __init__(
         self,
         app: FastAPI,
-        entity_service: EntityService,
+        service_dependency: Callable[..., EntityService],
     ):
         self.app = app
-        self.entity_service = entity_service
+        self.service_dependency = service_dependency
         self.register_handlers()
 
 
@@ -28,8 +29,11 @@ class Api:
         self,
         schema_class: type[SchemaClassAddressable],
     ):
-        def _post_handler(payload) -> Response:
-            entity_id = self.entity_service.create(
+        def _post_handler(
+            payload,
+            service: EntityService = Depends(self.service_dependency),
+        ) -> Response:
+            entity_id = service.create(
                 schema_class=schema_class,
                 payload=payload,
             )
@@ -47,8 +51,11 @@ class Api:
         self,
         schema_class: type[SchemaClassAddressable],
     ):
-        def _get_handler(entity_id: str):
-            read_model = self.entity_service.get(
+        def _get_handler(
+            entity_id: str,
+            service: EntityService = Depends(self.service_dependency),
+        ):
+            read_model = service.get(
                 schema_class=schema_class,
                 entity_id=entity_id,
             )
@@ -63,8 +70,12 @@ class Api:
         self,
         schema_class: type[SchemaClassAddressable],
     ):
-        def _get_all_handler():
-            return self.entity_service.get_all(schema_class=schema_class)
+        def _get_all_handler(
+            service: EntityService = Depends(self.service_dependency),
+        ):
+            return service.get_all(
+                schema_class=schema_class,
+            )
 
         _get_all_handler.__name__ = f"get_all_{schema_class.api_resource_name}"
         return _get_all_handler

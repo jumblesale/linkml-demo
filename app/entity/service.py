@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from app.entity.id import IdGenerator, Identifier
 from bookstore.generated.dto import DTOCreate, DTORead
 from bookstore.generated.schema import SchemaClassAddressable
@@ -28,6 +30,7 @@ class EntityService:
             schema_class=schema_class,
             payload=payload,
             entity_id=(id := self.id_generator()),
+            created_at=datetime.now(timezone.utc),
         )
         self.validator.validate(model)
         self.repository.save(schema_class, model)

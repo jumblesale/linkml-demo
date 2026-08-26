@@ -1,5 +1,6 @@
 from collections.abc import Collection
 from dataclasses import fields, is_dataclass
+from datetime import datetime
 from typing import Any, TypeVar, cast
 
 from bookstore.generated.domain import Model as DomainModel
@@ -9,6 +10,18 @@ from bookstore.generated.schema import SchemaClassAddressable
 
 
 Target = TypeVar("Target")
+
+
+def _entity_value(value: Any, field_name: str | None = None) -> Any:
+    if isinstance(value, list):
+        return [_entity_value(item, field_name) for item in value]
+    if field_name == "created_at" and isinstance(value, str):
+        return datetime.fromisoformat(str(value))
+    if (text := getattr(value, "text", None)) is not None:
+        return text
+    if (code := getattr(value, "code", None)) is not None:
+        return _entity_value(code)
+    return value
 
 
 def map_fields(
@@ -28,7 +41,10 @@ def map_fields(
         else fields(cast(Any, target_class))
     )
     values = {
-        field.name: getattr(source, field.name)
+        field.name: _entity_value(
+            getattr(source, field.name),
+            field.name,
+        )
         for field in source_fields
         if field.name in target_fields
         and (field_names is None or field.name in field_names)
@@ -43,11 +59,13 @@ class DtoDomainConverter:
         schema_class: type[SchemaClassAddressable],
         payload: DTOCreate,
         entity_id: str,
+        created_at: datetime | None = None,
     ) -> DomainModel:
         return map_fields(
             source=payload,
             target_class=schema_class.model_class,
             id=entity_id,
+            created_at=created_at,
         )
 
     def to_dto(

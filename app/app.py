@@ -1,23 +1,22 @@
-from uuid import uuid4
-
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from bookstore.generated.constraints import apply_constraints
 from app.api import Api
-from app.entity.mappers import DtoDomainConverter
-from app.entity.repository import EntityRepository
-from app.entity.service import EntityService
-from app.entity.validator import ModelValidator
+from app.database import engine
+from app.dependencies import get_service
+from bookstore.generated.entity import Base
 
 
-fast_api =  FastAPI(title="Bookstore API")
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    yield
+
+
+fast_api = FastAPI(title="Bookstore API", lifespan=lifespan)
 apply_constraints()
 api = Api(
     app=fast_api,
-    entity_service=EntityService(
-        repository=EntityRepository(),
-        converter=DtoDomainConverter(),
-        id_generator=lambda: str(uuid4()),
-        validator=ModelValidator(),
-    ),
+    service_dependency=get_service,
 )

@@ -93,7 +93,6 @@ slots:
     range: string
     required: true
     annotations:
-      infrastructure: true
       write_model: false
       read_model: true
 
@@ -101,9 +100,8 @@ slots:
     description: ISO-formatted UTC datetime when the entity was created in the system.
     range: datetime
     annotations:
-      infrastructure: true
       write_model: false
-      read_model: false
+      read_model: true
 
   name:
     description: Name of the person or publisher.
