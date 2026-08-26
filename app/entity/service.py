@@ -1,7 +1,7 @@
 from app.entity.id import IdGenerator, Identifier
 from bookstore.generated.dto import DTOCreate, DTORead
 from bookstore.generated.schema import SchemaClassAddressable
-from app.entity.converter import EntityConverter
+from app.entity.mappers import DtoDomainConverter
 from app.entity.repository import EntityRepository
 
 
@@ -9,7 +9,7 @@ class EntityService:
     def __init__(
         self,
         repository: EntityRepository,
-        converter: EntityConverter,
+        converter: DtoDomainConverter,
         id_generator: IdGenerator,
     ):
         self.repository = repository
@@ -21,12 +21,12 @@ class EntityService:
         schema_class: type[SchemaClassAddressable],
         payload: DTOCreate,
     ) -> Identifier:
-        entity = self.converter.to_entity(
+        domain = self.converter.to_domain(
             schema_class=schema_class,
             payload=payload,
             entity_id=(id := self.id_generator()),
         )
-        self.repository.save(entity)
+        self.repository.save(schema_class, domain)
         return id
 
     def get(
@@ -34,16 +34,15 @@ class EntityService:
         schema_class: type[SchemaClassAddressable],
         entity_id: Identifier,
     ) -> DTORead | None:
-        if (entity := self.repository.find_by_id(entity_id)) is None:
+        if (domain := self.repository.find_by_id(schema_class, entity_id)) is None:
             return None
-        return self.converter.to_read_model(schema_class, entity)
+        return self.converter.to_dto(schema_class, domain)
 
     def get_all(
         self,
         schema_class: type[SchemaClassAddressable],
     ) -> list[DTORead]:
         return [
-            self.converter.to_read_model(schema_class, entity)
-            for entity in self.repository.find_all()
-            if isinstance(entity, schema_class.entity_class)
+            self.converter.to_dto(schema_class, domain)
+            for domain in self.repository.find_all(schema_class)
         ]
