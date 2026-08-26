@@ -1,7 +1,7 @@
 from http import HTTPStatus
-from dataclasses import asdict
+from urllib.parse import quote
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Response
 
 from bookstore.generated.schema import SchemaClass
 from app.entity.service import EntityService
@@ -27,10 +27,17 @@ class Api:
         self,
         schema_class: type[SchemaClass],
     ):
-        def _post_handler(payload):
-            self.entity_service.create(
+        def _post_handler(payload) -> Response:
+            entity = self.entity_service.create(
                 schema_class=schema_class,
                 payload=payload,
+            )
+            location = (
+                f"/{schema_class.api_resource_name}/{quote(str(entity.id), safe='')}"
+            )
+            return Response(
+                status_code=HTTPStatus.CREATED,
+                headers={"Location": location},
             )
 
         _post_handler.__annotations__["payload"] = schema_class.write_model
