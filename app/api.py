@@ -57,6 +57,16 @@ class Api:
         _get_handler.__name__ = f"get_{schema_class.api_resource_name}"
         return _get_handler
 
+    def get_all_handler(
+        self,
+        schema_class: type[SchemaClassAddressable],
+    ):
+        def _get_all_handler():
+            return self.entity_service.get_all(schema_class=schema_class)
+
+        _get_all_handler.__name__ = f"get_all_{schema_class.api_resource_name}"
+        return _get_all_handler
+
     def register_handlers(
         self,
     ):
@@ -64,10 +74,22 @@ class Api:
             self.app.post(
                 f"/{schema_class.api_resource_name}",
                 name=f"create_{schema_class.api_resource_name}",
+                summary=f"Create a new {schema_class.entity_name()}",
+                tags=[schema_class.__name__],
                 status_code=HTTPStatus.CREATED,
             )(self.post_handler(schema_class))
             self.app.get(
+                f"/{schema_class.api_resource_name}",
+                name=f"get_all_{schema_class.api_resource_name}",
+                summary=f"Get all {schema_class.entity_name()}s",
+                tags=[schema_class.__name__],
+                response_model=list[schema_class.read_model],
+            )(self.get_all_handler(schema_class))
+
+            self.app.get(
                 f"/{schema_class.api_resource_name}/{{entity_id}}",
                 name=f"get_{schema_class.api_resource_name}",
+                summary=f"Get a {schema_class.entity_name()} by id",
+                tags=[schema_class.__name__],
                 response_model=schema_class.read_model,
             )(self.get_handler(schema_class))

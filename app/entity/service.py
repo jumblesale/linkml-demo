@@ -37,3 +37,13 @@ class EntityService:
         if (entity := self.repository.find_by_id(entity_id)) is None:
             return None
         return self.converter.to_read_model(schema_class, entity)
+
+    def get_all(
+        self,
+        schema_class: type[SchemaClassAddressable],
+    ) -> list[DTORead]:
+        return [
+            self.converter.to_read_model(schema_class, entity)
+            for entity in self.repository.find_all()
+            if isinstance(entity, schema_class.entity_class)
+        ]

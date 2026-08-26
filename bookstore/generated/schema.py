@@ -41,6 +41,10 @@ class RelationshipSchemaClass:
     model_class: ClassVar[Type]
     entity_class: ClassVar[Type]
 
+    @classmethod
+    def entity_name(cls) -> str:
+        return cls.__name__.lower()
+
 @dataclass
 class SchemaClassAddressable(RelationshipSchemaClass):
     write_model: ClassVar[Type[DTOCreate]]
