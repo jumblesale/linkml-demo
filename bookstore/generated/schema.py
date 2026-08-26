@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import ClassVar, Optional, Type
+from typing import ClassVar, Type
 
 from bookstore.generated.domain import (
     Model as ModelModel,
@@ -37,32 +37,29 @@ from bookstore.generated.dto import (
 )
 
 @dataclass
-class SchemaClass:
+class RelationshipSchemaClass:
     model_class: ClassVar[Type]
     entity_class: ClassVar[Type]
-    write_model: ClassVar[Optional[Type[DTOCreate]]]
-    read_model: ClassVar[Optional[Type[DTORead]]]
-    api_resource_name: ClassVar[Optional[str]]
+
+@dataclass
+class SchemaClassAddressable(RelationshipSchemaClass):
+    write_model: ClassVar[Type[DTOCreate]]
+    read_model: ClassVar[Type[DTORead]]
+    api_resource_name: ClassVar[str]
 
 
 @dataclass
-class Model(SchemaClass):
+class Model(RelationshipSchemaClass):
     model_class = ModelModel
     entity_class = ModelEntity
-    write_model = None
-    read_model = None
-    api_resource_name = None
 
 @dataclass
-class Person(SchemaClass):
+class Person(RelationshipSchemaClass):
     model_class = PersonModel
     entity_class = PersonEntity
-    write_model = None
-    read_model = None
-    api_resource_name = None
 
 @dataclass
-class Book(SchemaClass):
+class Book(SchemaClassAddressable):
     model_class = BookModel
     entity_class = BookEntity
     write_model = BookCreate
@@ -70,7 +67,7 @@ class Book(SchemaClass):
     api_resource_name = "books"
 
 @dataclass
-class Author(SchemaClass):
+class Author(SchemaClassAddressable):
     model_class = AuthorModel
     entity_class = AuthorEntity
     write_model = AuthorCreate
@@ -78,7 +75,7 @@ class Author(SchemaClass):
     api_resource_name = "authors"
 
 @dataclass
-class Publisher(SchemaClass):
+class Publisher(SchemaClassAddressable):
     model_class = PublisherModel
     entity_class = PublisherEntity
     write_model = PublisherCreate
@@ -86,7 +83,7 @@ class Publisher(SchemaClass):
     api_resource_name = "publishers"
 
 @dataclass
-class User(SchemaClass):
+class User(SchemaClassAddressable):
     model_class = UserModel
     entity_class = UserEntity
     write_model = UserCreate
@@ -94,7 +91,7 @@ class User(SchemaClass):
     api_resource_name = "users"
 
 @dataclass
-class Review(SchemaClass):
+class Review(SchemaClassAddressable):
     model_class = ReviewModel
     entity_class = ReviewEntity
     write_model = ReviewCreate

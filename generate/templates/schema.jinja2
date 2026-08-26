@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import ClassVar, Optional, Type
+from typing import ClassVar, Type
 
 from {{import_path}}.domain import (
 {%- for class in classes %}
@@ -17,37 +17,34 @@ from {{import_path}}.dto import (
     DTOCreate,
     DTORead,
 {%- for class in classes %}
-{%- if class.has_read_model %}
+{%- if class.is_addressable %}
     {{ class.class_name }}Read,
 {%- endif %}
-{%- if class.has_write_model %}
+{%- if class.is_addressable %}
     {{ class.class_name }}Create,
 {%- endif %}
 {%- endfor %}
 )
 
 @dataclass
-class SchemaClass:
+class RelationshipSchemaClass:
     model_class: ClassVar[Type]
     entity_class: ClassVar[Type]
-    write_model: ClassVar[Optional[Type[DTOCreate]]]
-    read_model: ClassVar[Optional[Type[DTORead]]]
-    api_resource_name: ClassVar[Optional[str]]
+
+@dataclass
+class SchemaClassAddressable(RelationshipSchemaClass):
+    write_model: ClassVar[Type[DTOCreate]]
+    read_model: ClassVar[Type[DTORead]]
+    api_resource_name: ClassVar[str]
 
 {% for class in classes %}
 @dataclass
-class {{ class.class_name }}(SchemaClass):
+class {{ class.class_name }}({{ "SchemaClassAddressable" if class.is_addressable else "RelationshipSchemaClass" }}):
     model_class = {{ class.class_name }}Model
     entity_class = {{ class.class_name }}Entity
-    {%- if class.has_write_model %}
+    {%- if class.is_addressable %}
     write_model = {{ class.class_name }}Create
-    {%- else %}
-    write_model = None
-    {%- endif %}
-    {%- if class.has_read_model %}
     read_model = {{ class.class_name }}Read
-    {%- else %}
-    read_model = None
+    api_resource_name = "{{ class.api_resource_name }}"
     {%- endif %}
-    api_resource_name = {{ ('"' ~ class.api_resource_name ~ '"') if class.api_resource_name is string else None }}
 {% endfor %}

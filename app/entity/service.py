@@ -1,6 +1,6 @@
 from app.entity.id import IdGenerator, Identifier
-from bookstore.generated.dto import DTOCreate
-from bookstore.generated.schema import SchemaClass
+from bookstore.generated.dto import DTOCreate, DTORead
+from bookstore.generated.schema import SchemaClassAddressable
 from app.entity.converter import EntityConverter
 from app.entity.repository import EntityRepository
 
@@ -18,7 +18,7 @@ class EntityService:
 
     def create(
         self,
-        schema_class: type[SchemaClass],
+        schema_class: type[SchemaClassAddressable],
         payload: DTOCreate,
     ) -> Identifier:
         entity = self.converter.to_entity(
@@ -28,3 +28,12 @@ class EntityService:
         )
         self.repository.save(entity)
         return id
+
+    def get(
+        self,
+        schema_class: type[SchemaClassAddressable],
+        entity_id: Identifier,
+    ) -> DTORead | None:
+        if (entity := self.repository.find_by_id(entity_id)) is None:
+            return None
+        return self.converter.to_read_model(schema_class, entity)

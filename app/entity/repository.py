@@ -1,15 +1,19 @@
-from typing import TypeVar
-
 from bookstore.generated.entity import Base
-
-
-Entity = TypeVar("Entity", bound=Base)
 
 
 class EntityRepository:
     def __init__(self):
         self.entities: list[Base] = []
 
-    def save(self, entity: Entity) -> Entity:
+    def save(self, entity: Base) -> None:
         self.entities.append(entity)
-        return entity
+
+    def find_by_id(self, entity_id: str) -> Base | None:
+        return next(
+            (
+                entity
+                for entity in self.entities
+                if getattr(entity, "id", None) == entity_id
+            ),
+            None,
+        )

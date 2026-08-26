@@ -17,8 +17,7 @@ MODULE_PATH = REPOSITORY_ROOT / MODULE_NAME
 class SchemaItem:
     class_name: str
     api_resource_name: Optional[str]
-    has_write_model: bool
-    has_read_model: bool
+    is_addressable: bool
 
 
 def _template(template_file: str) -> Template:
@@ -164,8 +163,7 @@ def render(schema_path: Path):
         schema_items.append(SchemaItem(
             class_name=class_name,
             api_resource_name=api_resource_name,
-            has_write_model=class_name in api_class_names,
-            has_read_model=class_name in api_class_names,
+            is_addressable=class_name in api_class_names,
         ))
     template = _template("schema")
     (MODULE_PATH / "generated/schema.py").write_text(
