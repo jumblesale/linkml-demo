@@ -1,0 +1,22 @@
+from sqlalchemy import UniqueConstraint
+
+from {{ import_path }}.entity import (
+{%- for constraint in constraints %}
+    {{ constraint.class_name }},
+{%- endfor %}
+)
+
+
+def apply_constraints() -> None:
+{%- for constraint in constraints %}
+{%- for unique_key in constraint.unique_keys %}
+    {{ constraint.class_name }}.__table__.append_constraint(
+        UniqueConstraint(
+{%- for slot_name in unique_key.slot_names %}
+            "{{ slot_name }}",
+{%- endfor %}
+            name="{{ unique_key.name }}",
+        ),
+    )
+{%- endfor %}
+{%- endfor %}

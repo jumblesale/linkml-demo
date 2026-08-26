@@ -2,6 +2,7 @@ from http import HTTPStatus
 from urllib.parse import quote
 
 from fastapi import FastAPI, HTTPException, Response
+from fastapi.responses import JSONResponse
 
 from bookstore.generated.schema import SchemaClassAddressable
 from app.entity.service import EntityService

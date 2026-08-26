@@ -27,10 +27,44 @@ def _template(template_file: str) -> Template:
 
 def _render_sql_alchemy(schema_path: Path):
     generator = SQLAlchemyGenerator(schema=schema_path)
-
     (MODULE_PATH / "generated/entity.py").write_text(
         generator.generate_sqla(template=TemplateEnum.DECLARATIVE_2X)
     )
+
+
+@dataclass
+class UniqueKeyItem:
+    name: str
+    slot_names: list[str]
+
+
+@dataclass
+class ConstraintItem:
+    class_name: str
+    unique_keys: list[UniqueKeyItem]
+
+
+def _render_constraints(schema_view: SchemaView):
+    constraints = []
+    for class_name, class_definition in _schema_classes(schema_view):
+        if not class_definition.unique_keys:
+            continue
+        unique_keys = [
+            UniqueKeyItem(
+                name=f"uq_{class_name.lower()}_{key_name}",
+                slot_names=list(unique_key.unique_key_slots),
+            )
+            for key_name, unique_key in class_definition.unique_keys.items()
+        ]
+        constraints.append(ConstraintItem(
+            class_name=class_name,
+            unique_keys=unique_keys,
+        ))
+    template = _template("constraints")
+    (MODULE_PATH / "generated/constraints.py").write_text(template.render(
+        import_path=f"{MODULE_PATH.name}.generated",
+        constraints=constraints,
+    ))
 
 def _render_model(schema_path: Path):
     generator = PythonGenerator(schema_path)
@@ -156,6 +190,7 @@ def _api_schema_classes(
 def render(schema_path: Path):
     schema_view = SchemaView(schema_path)
     _render_sql_alchemy(schema_path=schema_path)
+    _render_constraints(schema_view=schema_view)
     _render_model(schema_path=schema_path)
     _render_dtos(schema_view=schema_view)
     api_class_names = {

@@ -39,6 +39,13 @@ classes:
       - publisher
       - genre
       - reviews
+    unique_keys:
+      unique_title:
+        unique_key_slots:
+          - title
+      unique_isbn:
+        unique_key_slots:
+          - ISBN
     annotations:
       api_resource_name: books
 
