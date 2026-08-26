@@ -8,6 +8,7 @@ This repository contains a demonstration of generating a REST API from an abstra
 - Supports POSTing a new entity, GETing an entity by ID, and GETing all entities
 - Validates model invariants defined in the LinkML schema when creating entities
 - Supports uniqueness constraints and responds with a 409 response if they are not unique
+- Supports relationships between entities by looking up entities by the supplied IDs
 
 ## Setup
 

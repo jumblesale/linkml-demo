@@ -152,9 +152,12 @@ def _render_dtos(schema_view: SchemaView):
             dto_slots.append(DTOSlot(
                 name=slot.name,
                 python_type=_python_type(slot),
-                required=slot.required is True,
+                required=(
+                    slot.required is True
+                    or (slot.minimum_cardinality or 0) > 0
+                ),
             ))
-        return dto_slots
+        return sorted(dto_slots, key=lambda slot: not slot.required)
 
     dtos = []
     for class_name, class_definition in _api_schema_classes(schema_view=schema_view):

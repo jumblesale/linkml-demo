@@ -2,83 +2,83 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Literal
 
-@dataclass
+@dataclass(frozen=True)
 class DTO: ...
 
-@dataclass
+@dataclass(frozen=True)
 class DTOCreate(DTO): ...
 
-@dataclass
+@dataclass(frozen=True)
 class DTORead(DTO): ...
 
 
-@dataclass
+@dataclass(frozen=True)
 class BookCreate(DTOCreate):
     title: str
     ISBN: str
     authors: list[str]
     genre: Literal['Sci-fi', 'Fantasy', 'Crime', 'Thriller', 'Non-fiction', 'Biography']
 
-@dataclass
+@dataclass(frozen=True)
 class BookRead(DTORead):
     title: str
     ISBN: str
     authors: list[str]
     genre: Literal['Sci-fi', 'Fantasy', 'Crime', 'Thriller', 'Non-fiction', 'Biography']
     id: str
-    created_at: datetime | None
+    created_at: datetime | None = None
 
 
-@dataclass
+@dataclass(frozen=True)
 class AuthorCreate(DTOCreate):
     name: str
-    gender: str | None
-    date_of_birth: date | None
+    gender: str | None = None
+    date_of_birth: date | None = None
 
-@dataclass
+@dataclass(frozen=True)
 class AuthorRead(DTORead):
     name: str
-    gender: str | None
-    date_of_birth: date | None
     id: str
-    created_at: datetime | None
+    gender: str | None = None
+    date_of_birth: date | None = None
+    created_at: datetime | None = None
 
 
-@dataclass
+@dataclass(frozen=True)
 class PublisherCreate(DTOCreate):
     name: str
 
-@dataclass
+@dataclass(frozen=True)
 class PublisherRead(DTORead):
     name: str
     id: str
-    created_at: datetime | None
+    created_at: datetime | None = None
 
 
-@dataclass
+@dataclass(frozen=True)
 class UserCreate(DTOCreate):
     name: str
-    gender: str | None
-    date_of_birth: date | None
+    gender: str | None = None
+    date_of_birth: date | None = None
 
-@dataclass
+@dataclass(frozen=True)
 class UserRead(DTORead):
     name: str
-    gender: str | None
-    date_of_birth: date | None
     id: str
-    created_at: datetime | None
+    gender: str | None = None
+    date_of_birth: date | None = None
+    created_at: datetime | None = None
 
 
-@dataclass
+@dataclass(frozen=True)
 class ReviewCreate(DTOCreate):
     user: str
     score: int
-    review_text: str | None
+    review_text: str | None = None
 
-@dataclass
+@dataclass(frozen=True)
 class ReviewRead(DTORead):
     score: int
-    review_text: str | None
     id: str
-    created_at: datetime | None
+    review_text: str | None = None
+    created_at: datetime | None = None

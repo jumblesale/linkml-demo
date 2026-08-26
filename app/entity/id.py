@@ -4,5 +4,5 @@ from uuid import uuid4
 Identifier: TypeAlias = str
 IdGenerator = Callable[[], Identifier]
 
-def id() -> Identifier:
+def id_generator() -> Identifier:
     return str(uuid4())

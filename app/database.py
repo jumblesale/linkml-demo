@@ -25,7 +25,7 @@ def get_session() -> Generator[Session, None, None]:
         session.close()
 
 
-def get_repository(
+def entity_repository(
     session: Session = Depends(get_session),
 ) -> EntityRepository:
     return EntityRepository(session=session)

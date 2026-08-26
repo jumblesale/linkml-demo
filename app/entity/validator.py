@@ -33,26 +33,21 @@ class ModelValidator:
         schema_class: type[SchemaClassAddressable],
         model: Model,
     ) -> list[dict[str, Any]]:
-        errors = []
-        for name, relationship in schema_class.relationships.items():
-            minimum = relationship.minimum_cardinality
-            if minimum is None:
-                continue
-            value = getattr(model, name, None)
-            count = (
-                len(value)
-                if isinstance(value, list)
-                else int(value is not None)
+        return [
+            ModelValidator._cardinality_error(
+                field_name=name,
+                value=value,
+                minimum=minimum,
             )
-            if count < minimum:
-                errors.append(
-                    ModelValidator._cardinality_error(
-                        field_name=name,
-                        value=value,
-                        minimum=minimum,
-                    )
-                )
-        return errors
+            for name, relationship in schema_class.relationships.items()
+            if (minimum := relationship.minimum_cardinality) is not None
+            for value in (getattr(model, name, None),)
+            if ModelValidator._value_count(value) < minimum
+        ]
+
+    @staticmethod
+    def _value_count(value: Any) -> int:
+        return len(value) if isinstance(value, list) else int(value is not None)
 
     @staticmethod
     def _cardinality_error(
@@ -94,7 +89,11 @@ class ModelValidator:
     ) -> list[dict[str, Any]]:
         values = value if isinstance(value, list) else [value]
         return [
-            self._error(pattern, item, self._location(field_name, value, index))
+            self._pattern_error(
+                pattern,
+                item,
+                self._location(field_name, value, index),
+            )
             for index, item in enumerate(values)
             if pattern.fullmatch(str(item)) is None
         ]
@@ -109,7 +108,7 @@ class ModelValidator:
         return location + (index,) if isinstance(value, list) else location
 
     @staticmethod
-    def _error(
+    def _pattern_error(
         pattern: Pattern[str],
         value: Any,
         location: tuple[Any, ...],

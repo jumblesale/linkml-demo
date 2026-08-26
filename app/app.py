@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from bookstore.generated.constraints import apply_constraints
 from app.api import Api
 from app.database import engine
-from app.dependencies import get_service
+from app.dependencies import entity_service
 from bookstore.generated.entity import Base
 
 
@@ -18,5 +18,5 @@ fast_api = FastAPI(title="Bookstore API", lifespan=lifespan)
 apply_constraints()
 api = Api(
     app=fast_api,
-    service_dependency=get_service,
+    service_dependency=entity_service,
 )

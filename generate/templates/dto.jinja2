@@ -2,20 +2,20 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Literal
 
-@dataclass
+@dataclass(frozen=True)
 class DTO: ...
 
-@dataclass
+@dataclass(frozen=True)
 class DTOCreate(DTO): ...
 
-@dataclass
+@dataclass(frozen=True)
 class DTORead(DTO): ...
 {% for class in dtos %}
 {% for model in class.models %}
-@dataclass
+@dataclass(frozen=True)
 class {{ class.name }}{{ model.name }}(DTO{{ model.name }}):
 {%- for slot in model.slots %}
-    {{ slot.name }}: {{ slot.python_type }}
+    {{ slot.name }}: {{ slot.python_type }}{% if not slot.required %} = None{% endif %}
 {%- else %}
     ...
 {%- endfor %}

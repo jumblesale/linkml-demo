@@ -42,7 +42,7 @@ class RelationshipMetadata:
     multivalued: bool
     minimum_cardinality: int | None
 
-@dataclass
+@dataclass(frozen=True)
 class RelationshipSchemaClass:
     model_class: ClassVar[Type]
     entity_class: ClassVar[Type]
@@ -56,28 +56,28 @@ class RelationshipSchemaClass:
     def entity_field_names(cls) -> set[str]:
         return set(cls.entity_class.__mapper__.attrs.keys())
 
-@dataclass
+@dataclass(frozen=True)
 class SchemaClassAddressable(RelationshipSchemaClass):
     write_model: ClassVar[Type[DTOCreate]]
     read_model: ClassVar[Type[DTORead]]
     api_resource_name: ClassVar[str]
 
 
-@dataclass
+@dataclass(frozen=True)
 class Model(RelationshipSchemaClass):
     model_class = ModelModel
     entity_class = ModelEntity
     relationships = {
     }
 
-@dataclass
+@dataclass(frozen=True)
 class Person(RelationshipSchemaClass):
     model_class = PersonModel
     entity_class = PersonEntity
     relationships = {
     }
 
-@dataclass
+@dataclass(frozen=True)
 class Book(SchemaClassAddressable):
     model_class = BookModel
     entity_class = BookEntity
@@ -102,7 +102,7 @@ class Book(SchemaClassAddressable):
     read_model = BookRead
     api_resource_name = "books"
 
-@dataclass
+@dataclass(frozen=True)
 class Author(SchemaClassAddressable):
     model_class = AuthorModel
     entity_class = AuthorEntity
@@ -117,7 +117,7 @@ class Author(SchemaClassAddressable):
     read_model = AuthorRead
     api_resource_name = "authors"
 
-@dataclass
+@dataclass(frozen=True)
 class Publisher(SchemaClassAddressable):
     model_class = PublisherModel
     entity_class = PublisherEntity
@@ -127,7 +127,7 @@ class Publisher(SchemaClassAddressable):
     read_model = PublisherRead
     api_resource_name = "publishers"
 
-@dataclass
+@dataclass(frozen=True)
 class User(SchemaClassAddressable):
     model_class = UserModel
     entity_class = UserEntity
@@ -147,7 +147,7 @@ class User(SchemaClassAddressable):
     read_model = UserRead
     api_resource_name = "users"
 
-@dataclass
+@dataclass(frozen=True)
 class Review(SchemaClassAddressable):
     model_class = ReviewModel
     entity_class = ReviewEntity
