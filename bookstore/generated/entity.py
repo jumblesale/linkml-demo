@@ -28,16 +28,17 @@ metadata = Base.metadata
 
 class Model(Base):
     """
-    The base model for any addressable entity in the bookstore.
+    The base model for this project.
     """
 
     __tablename__ = "Model"
 
-    id: Mapped[str] = mapped_column(Text(), primary_key=True)
-    created_at: Mapped[datetime | None] = mapped_column(DateTime())
+    uid: Mapped[int] = mapped_column(Integer(), primary_key=True, autoincrement=True)
+    id: Mapped[str] = mapped_column(Text())
+    created_at: Mapped[datetime] = mapped_column(DateTime())
 
     def __repr__(self):
-        return f"Model(id={self.id},created_at={self.created_at},)"
+        return f"Model(uid={self.uid},id={self.id},created_at={self.created_at},)"
 
 
 class BookAuthors(Base):
@@ -47,25 +48,11 @@ class BookAuthors(Base):
 
     __tablename__ = "Book_authors"
 
-    Book_id: Mapped[str] = mapped_column(Text(), ForeignKey("Book.id"), primary_key=True)
-    authors_id: Mapped[str] = mapped_column(Text(), ForeignKey("Author.id"), primary_key=True)
+    Book_uid: Mapped[int] = mapped_column(Integer(), ForeignKey("Book.uid"), primary_key=True)
+    authors_uid: Mapped[int] = mapped_column(Integer(), ForeignKey("Author.uid"), primary_key=True)
 
     def __repr__(self):
-        return f"Book_authors(Book_id={self.Book_id},authors_id={self.authors_id},)"
-
-
-class BookReviews(Base):
-    """
-    None
-    """
-
-    __tablename__ = "Book_reviews"
-
-    Book_id: Mapped[str] = mapped_column(Text(), ForeignKey("Book.id"), primary_key=True)
-    reviews_id: Mapped[str] = mapped_column(Text(), ForeignKey("Review.id"), primary_key=True)
-
-    def __repr__(self):
-        return f"Book_reviews(Book_id={self.Book_id},reviews_id={self.reviews_id},)"
+        return f"Book_authors(Book_uid={self.Book_uid},authors_uid={self.authors_uid},)"
 
 
 class AuthorBooksPublished(Base):
@@ -75,11 +62,11 @@ class AuthorBooksPublished(Base):
 
     __tablename__ = "Author_books_published"
 
-    Author_id: Mapped[str] = mapped_column(Text(), ForeignKey("Author.id"), primary_key=True)
-    books_published_id: Mapped[str] = mapped_column(Text(), ForeignKey("Book.id"), primary_key=True)
+    Author_uid: Mapped[int] = mapped_column(Integer(), ForeignKey("Author.uid"), primary_key=True)
+    books_published_uid: Mapped[int] = mapped_column(Integer(), ForeignKey("Book.uid"), primary_key=True)
 
     def __repr__(self):
-        return f"Author_books_published(Author_id={self.Author_id},books_published_id={self.books_published_id},)"
+        return f"Author_books_published(Author_uid={self.Author_uid},books_published_uid={self.books_published_uid},)"
 
 
 class UserHasBought(Base):
@@ -89,25 +76,11 @@ class UserHasBought(Base):
 
     __tablename__ = "User_has_bought"
 
-    User_id: Mapped[str] = mapped_column(Text(), ForeignKey("User.id"), primary_key=True)
-    has_bought_id: Mapped[str] = mapped_column(Text(), ForeignKey("Book.id"), primary_key=True)
+    User_uid: Mapped[int] = mapped_column(Integer(), ForeignKey("User.uid"), primary_key=True)
+    has_bought_uid: Mapped[int] = mapped_column(Integer(), ForeignKey("Book.uid"), primary_key=True)
 
     def __repr__(self):
-        return f"User_has_bought(User_id={self.User_id},has_bought_id={self.has_bought_id},)"
-
-
-class UserReviews(Base):
-    """
-    None
-    """
-
-    __tablename__ = "User_reviews"
-
-    User_id: Mapped[str] = mapped_column(Text(), ForeignKey("User.id"), primary_key=True)
-    reviews_id: Mapped[str] = mapped_column(Text(), ForeignKey("Review.id"), primary_key=True)
-
-    def __repr__(self):
-        return f"User_reviews(User_id={self.User_id},reviews_id={self.reviews_id},)"
+        return f"User_has_bought(User_uid={self.User_uid},has_bought_uid={self.has_bought_uid},)"
 
 
 class Person(Model):
@@ -117,14 +90,15 @@ class Person(Model):
 
     __tablename__ = "Person"
 
+    uid: Mapped[int] = mapped_column(Integer(), primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(Text())
     gender: Mapped[str | None] = mapped_column(Text())
     date_of_birth: Mapped[date | None] = mapped_column(Date())
-    id: Mapped[str] = mapped_column(Text(), primary_key=True)
-    created_at: Mapped[datetime | None] = mapped_column(DateTime())
+    id: Mapped[str] = mapped_column(Text())
+    created_at: Mapped[datetime] = mapped_column(DateTime())
 
     def __repr__(self):
-        return f"Person(name={self.name},gender={self.gender},date_of_birth={self.date_of_birth},id={self.id},created_at={self.created_at},)"
+        return f"Person(uid={self.uid},name={self.name},gender={self.gender},date_of_birth={self.date_of_birth},id={self.id},created_at={self.created_at},)"
 
     __mapper_args__ = {"concrete": True}
 
@@ -136,21 +110,18 @@ class Book(Model):
 
     __tablename__ = "Book"
 
+    uid: Mapped[int] = mapped_column(Integer(), primary_key=True, autoincrement=True)
     title: Mapped[str] = mapped_column(Text())
     ISBN: Mapped[str] = mapped_column(Text())
-    publisher: Mapped[str | None] = mapped_column(Text(), ForeignKey("Publisher.id"))
     genre: Mapped[str] = mapped_column(Enum('Sci-fi', 'Fantasy', 'Crime', 'Thriller', 'Non-fiction', 'Biography', name='Genre'))
-    id: Mapped[str] = mapped_column(Text(), primary_key=True)
-    created_at: Mapped[datetime | None] = mapped_column(DateTime())
+    id: Mapped[str] = mapped_column(Text())
+    created_at: Mapped[datetime] = mapped_column(DateTime())
 
     # ManyToMany
     authors: Mapped[list[Author]] = relationship(secondary="Book_authors")
 
-    # ManyToMany
-    reviews: Mapped[list[Review]] = relationship(secondary="Book_reviews")
-
     def __repr__(self):
-        return f"Book(title={self.title},ISBN={self.ISBN},publisher={self.publisher},genre={self.genre},id={self.id},created_at={self.created_at},)"
+        return f"Book(uid={self.uid},title={self.title},ISBN={self.ISBN},genre={self.genre},id={self.id},created_at={self.created_at},)"
 
     __mapper_args__ = {"concrete": True}
 
@@ -162,31 +133,13 @@ class Publisher(Model):
 
     __tablename__ = "Publisher"
 
+    uid: Mapped[int] = mapped_column(Integer(), primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(Text())
-    id: Mapped[str] = mapped_column(Text(), primary_key=True)
-    created_at: Mapped[datetime | None] = mapped_column(DateTime())
+    id: Mapped[str] = mapped_column(Text())
+    created_at: Mapped[datetime] = mapped_column(DateTime())
 
     def __repr__(self):
-        return f"Publisher(name={self.name},id={self.id},created_at={self.created_at},)"
-
-    __mapper_args__ = {"concrete": True}
-
-
-class Review(Model):
-    """
-    A user-submitted review of a book in the store.
-    """
-
-    __tablename__ = "Review"
-
-    user: Mapped[str] = mapped_column(Text(), ForeignKey("User.id"))
-    score: Mapped[int] = mapped_column(Integer())
-    review_text: Mapped[str | None] = mapped_column(Text())
-    id: Mapped[str] = mapped_column(Text(), primary_key=True)
-    created_at: Mapped[datetime | None] = mapped_column(DateTime())
-
-    def __repr__(self):
-        return f"Review(user={self.user},score={self.score},review_text={self.review_text},id={self.id},created_at={self.created_at},)"
+        return f"Publisher(uid={self.uid},name={self.name},id={self.id},created_at={self.created_at},)"
 
     __mapper_args__ = {"concrete": True}
 
@@ -198,17 +151,18 @@ class Author(Person):
 
     __tablename__ = "Author"
 
+    uid: Mapped[int] = mapped_column(Integer(), primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(Text())
     gender: Mapped[str | None] = mapped_column(Text())
     date_of_birth: Mapped[date | None] = mapped_column(Date())
-    id: Mapped[str] = mapped_column(Text(), primary_key=True)
-    created_at: Mapped[datetime | None] = mapped_column(DateTime())
+    id: Mapped[str] = mapped_column(Text())
+    created_at: Mapped[datetime] = mapped_column(DateTime())
 
     # ManyToMany
     books_published: Mapped[list[Book]] = relationship(secondary="Author_books_published")
 
     def __repr__(self):
-        return f"Author(name={self.name},gender={self.gender},date_of_birth={self.date_of_birth},id={self.id},created_at={self.created_at},)"
+        return f"Author(uid={self.uid},name={self.name},gender={self.gender},date_of_birth={self.date_of_birth},id={self.id},created_at={self.created_at},)"
 
     __mapper_args__ = {"concrete": True}
 
@@ -220,19 +174,17 @@ class User(Person):
 
     __tablename__ = "User"
 
+    uid: Mapped[int] = mapped_column(Integer(), primary_key=True, autoincrement=True)
     name: Mapped[str] = mapped_column(Text())
     gender: Mapped[str | None] = mapped_column(Text())
     date_of_birth: Mapped[date | None] = mapped_column(Date())
-    id: Mapped[str] = mapped_column(Text(), primary_key=True)
-    created_at: Mapped[datetime | None] = mapped_column(DateTime())
+    id: Mapped[str] = mapped_column(Text())
+    created_at: Mapped[datetime] = mapped_column(DateTime())
 
     # ManyToMany
     has_bought: Mapped[list[Book]] = relationship(secondary="User_has_bought")
 
-    # ManyToMany
-    reviews: Mapped[list[Review]] = relationship(secondary="User_reviews")
-
     def __repr__(self):
-        return f"User(name={self.name},gender={self.gender},date_of_birth={self.date_of_birth},id={self.id},created_at={self.created_at},)"
+        return f"User(uid={self.uid},name={self.name},gender={self.gender},date_of_birth={self.date_of_birth},id={self.id},created_at={self.created_at},)"
 
     __mapper_args__ = {"concrete": True}

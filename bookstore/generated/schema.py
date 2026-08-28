@@ -8,7 +8,6 @@ from bookstore.generated.domain import (
     Author as AuthorModel,
     Publisher as PublisherModel,
     User as UserModel,
-    Review as ReviewModel,
 )
 
 from bookstore.generated.entity import (
@@ -18,7 +17,6 @@ from bookstore.generated.entity import (
     Author as AuthorEntity,
     Publisher as PublisherEntity,
     User as UserEntity,
-    Review as ReviewEntity,
 )
 
 from bookstore.generated.dto import (
@@ -32,8 +30,6 @@ from bookstore.generated.dto import (
     PublisherCreate,
     UserRead,
     UserCreate,
-    ReviewRead,
-    ReviewCreate,
 )
 
 @dataclass(frozen=True)
@@ -87,16 +83,6 @@ class Book(SchemaClassAddressable):
             multivalued=True,
             minimum_cardinality=1,
         ),
-        "publisher": RelationshipMetadata(
-            target_class_name="Publisher",
-            multivalued=False,
-            minimum_cardinality=None,
-        ),
-        "reviews": RelationshipMetadata(
-            target_class_name="Review",
-            multivalued=True,
-            minimum_cardinality=0,
-        ),
     }
     write_model = BookCreate
     read_model = BookRead
@@ -137,27 +123,7 @@ class User(SchemaClassAddressable):
             multivalued=True,
             minimum_cardinality=0,
         ),
-        "reviews": RelationshipMetadata(
-            target_class_name="Review",
-            multivalued=True,
-            minimum_cardinality=0,
-        ),
     }
     write_model = UserCreate
     read_model = UserRead
     api_resource_name = "users"
-
-@dataclass(frozen=True)
-class Review(SchemaClassAddressable):
-    model_class = ReviewModel
-    entity_class = ReviewEntity
-    relationships = {
-        "user": RelationshipMetadata(
-            target_class_name="User",
-            multivalued=False,
-            minimum_cardinality=None,
-        ),
-    }
-    write_model = ReviewCreate
-    read_model = ReviewRead
-    api_resource_name = "reviews"

@@ -1,8 +1,11 @@
 default:
     @just --list
 
-generate:
-    python generate/schema.py
+generate: && db-clear
+    uv run python generate/schema.py
+
+db-clear:
+    uv run python -m app.database --clear
 
 run:
     uv run uvicorn app.app:fast_api --reload

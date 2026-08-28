@@ -1,5 +1,5 @@
 # Auto generated from bookstore.yaml by pythongen.py version: 0.0.1
-# Generation date: 2026-08-26T14:08:07
+# Generation date: 2026-08-28T10:20:25
 # Schema: bookstore
 #
 # id: https://example.org/bookstore
@@ -56,7 +56,7 @@ from rdflib import (
     URIRef
 )
 
-from linkml_runtime.linkml_model.types import Date, Datetime, Integer, String
+from linkml_runtime.linkml_model.types import Date, Datetime, String
 from linkml_runtime.utils.metamodelcore import XSDDate, XSDDateTime
 
 metamodel_version = "1.11.0"
@@ -71,38 +71,13 @@ DEFAULT_ = BOOKSTORE
 # Types
 
 # Class references
-class ModelId(extended_str):
-    pass
 
-
-class PersonId(ModelId):
-    pass
-
-
-class BookId(ModelId):
-    pass
-
-
-class AuthorId(PersonId):
-    pass
-
-
-class PublisherId(ModelId):
-    pass
-
-
-class UserId(PersonId):
-    pass
-
-
-class ReviewId(ModelId):
-    pass
 
 
 @dataclass(repr=False)
 class Model(YAMLRoot):
     """
-    The base model for any addressable entity in the bookstore.
+    The base model for this project.
     """
     _inherited_slots: ClassVar[list[str]] = []
 
@@ -111,16 +86,18 @@ class Model(YAMLRoot):
     class_name: ClassVar[str] = "Model"
     class_model_uri: ClassVar[URIRef] = BOOKSTORE.Model
 
-    id: Union[str, ModelId] = None
-    created_at: Optional[Union[str, XSDDateTime]] = None
+    id: str = None
+    created_at: Union[str, XSDDateTime] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
         if self._is_empty(self.id):
             self.MissingRequiredField("id")
-        if not isinstance(self.id, ModelId):
-            self.id = ModelId(self.id)
+        if not isinstance(self.id, str):
+            self.id = str(self.id)
 
-        if self.created_at is not None and not isinstance(self.created_at, XSDDateTime):
+        if self._is_empty(self.created_at):
+            self.MissingRequiredField("created_at")
+        if not isinstance(self.created_at, XSDDateTime):
             self.created_at = XSDDateTime(self.created_at)
 
         super().__post_init__(**kwargs)
@@ -138,17 +115,13 @@ class Person(Model):
     class_name: ClassVar[str] = "Person"
     class_model_uri: ClassVar[URIRef] = BOOKSTORE.Person
 
-    id: Union[str, PersonId] = None
+    id: str = None
+    created_at: Union[str, XSDDateTime] = None
     name: str = None
     gender: Optional[str] = None
     date_of_birth: Optional[Union[str, XSDDate]] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.id):
-            self.MissingRequiredField("id")
-        if not isinstance(self.id, PersonId):
-            self.id = PersonId(self.id)
-
         if self._is_empty(self.name):
             self.MissingRequiredField("name")
         if not isinstance(self.name, str):
@@ -175,20 +148,14 @@ class Book(Model):
     class_name: ClassVar[str] = "Book"
     class_model_uri: ClassVar[URIRef] = BOOKSTORE.Book
 
-    id: Union[str, BookId] = None
+    id: str = None
+    created_at: Union[str, XSDDateTime] = None
     title: str = None
     ISBN: str = None
+    authors: Union[Union[dict, "Author"], list[Union[dict, "Author"]]] = None
     genre: Union[str, "Genre"] = None
-    authors: Optional[Union[Union[str, AuthorId], list[Union[str, AuthorId]]]] = empty_list()
-    publisher: Optional[Union[str, PublisherId]] = None
-    reviews: Optional[Union[Union[str, ReviewId], list[Union[str, ReviewId]]]] = empty_list()
 
     def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.id):
-            self.MissingRequiredField("id")
-        if not isinstance(self.id, BookId):
-            self.id = BookId(self.id)
-
         if self._is_empty(self.title):
             self.MissingRequiredField("title")
         if not isinstance(self.title, str):
@@ -199,21 +166,14 @@ class Book(Model):
         if not isinstance(self.ISBN, str):
             self.ISBN = str(self.ISBN)
 
+        if self._is_empty(self.authors):
+            self.MissingRequiredField("authors")
+        self._normalize_inlined_as_list(slot_name="authors", slot_type=Author, key_name="id", keyed=False)
+
         if self._is_empty(self.genre):
             self.MissingRequiredField("genre")
         if not isinstance(self.genre, Genre):
             self.genre = Genre(self.genre)
-
-        if not isinstance(self.authors, list):
-            self.authors = [self.authors] if self.authors is not None else []
-        self.authors = [v if isinstance(v, AuthorId) else AuthorId(v) for v in self.authors]
-
-        if self.publisher is not None and not isinstance(self.publisher, PublisherId):
-            self.publisher = PublisherId(self.publisher)
-
-        if not isinstance(self.reviews, list):
-            self.reviews = [self.reviews] if self.reviews is not None else []
-        self.reviews = [v if isinstance(v, ReviewId) else ReviewId(v) for v in self.reviews]
 
         super().__post_init__(**kwargs)
 
@@ -230,19 +190,13 @@ class Author(Person):
     class_name: ClassVar[str] = "Author"
     class_model_uri: ClassVar[URIRef] = BOOKSTORE.Author
 
-    id: Union[str, AuthorId] = None
+    id: str = None
+    created_at: Union[str, XSDDateTime] = None
     name: str = None
-    books_published: Optional[Union[Union[str, BookId], list[Union[str, BookId]]]] = empty_list()
+    books_published: Optional[Union[Union[dict, Book], list[Union[dict, Book]]]] = empty_list()
 
     def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.id):
-            self.MissingRequiredField("id")
-        if not isinstance(self.id, AuthorId):
-            self.id = AuthorId(self.id)
-
-        if not isinstance(self.books_published, list):
-            self.books_published = [self.books_published] if self.books_published is not None else []
-        self.books_published = [v if isinstance(v, BookId) else BookId(v) for v in self.books_published]
+        self._normalize_inlined_as_list(slot_name="books_published", slot_type=Book, key_name="id", keyed=False)
 
         super().__post_init__(**kwargs)
 
@@ -259,15 +213,11 @@ class Publisher(Model):
     class_name: ClassVar[str] = "Publisher"
     class_model_uri: ClassVar[URIRef] = BOOKSTORE.Publisher
 
-    id: Union[str, PublisherId] = None
+    id: str = None
+    created_at: Union[str, XSDDateTime] = None
     name: str = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.id):
-            self.MissingRequiredField("id")
-        if not isinstance(self.id, PublisherId):
-            self.id = PublisherId(self.id)
-
         if self._is_empty(self.name):
             self.MissingRequiredField("name")
         if not isinstance(self.name, str):
@@ -288,72 +238,20 @@ class User(Person):
     class_name: ClassVar[str] = "User"
     class_model_uri: ClassVar[URIRef] = BOOKSTORE.User
 
-    id: Union[str, UserId] = None
+    id: str = None
+    created_at: Union[str, XSDDateTime] = None
     name: str = None
-    has_bought: Optional[Union[Union[str, BookId], list[Union[str, BookId]]]] = empty_list()
-    reviews: Optional[Union[Union[str, ReviewId], list[Union[str, ReviewId]]]] = empty_list()
+    has_bought: Optional[Union[Union[dict, Book], list[Union[dict, Book]]]] = empty_list()
 
     def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.id):
-            self.MissingRequiredField("id")
-        if not isinstance(self.id, UserId):
-            self.id = UserId(self.id)
-
-        if not isinstance(self.has_bought, list):
-            self.has_bought = [self.has_bought] if self.has_bought is not None else []
-        self.has_bought = [v if isinstance(v, BookId) else BookId(v) for v in self.has_bought]
-
-        if not isinstance(self.reviews, list):
-            self.reviews = [self.reviews] if self.reviews is not None else []
-        self.reviews = [v if isinstance(v, ReviewId) else ReviewId(v) for v in self.reviews]
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class Review(Model):
-    """
-    A user-submitted review of a book in the store.
-    """
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = BOOKSTORE["Review"]
-    class_class_curie: ClassVar[str] = "bookstore:Review"
-    class_name: ClassVar[str] = "Review"
-    class_model_uri: ClassVar[URIRef] = BOOKSTORE.Review
-
-    id: Union[str, ReviewId] = None
-    user: Union[str, UserId] = None
-    score: int = None
-    review_text: Optional[str] = None
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        if self._is_empty(self.id):
-            self.MissingRequiredField("id")
-        if not isinstance(self.id, ReviewId):
-            self.id = ReviewId(self.id)
-
-        if self._is_empty(self.user):
-            self.MissingRequiredField("user")
-        if not isinstance(self.user, UserId):
-            self.user = UserId(self.user)
-
-        if self._is_empty(self.score):
-            self.MissingRequiredField("score")
-        if not isinstance(self.score, int):
-            self.score = int(self.score)
-
-        if self.review_text is not None and not isinstance(self.review_text, str):
-            self.review_text = str(self.review_text)
+        self._normalize_inlined_as_list(slot_name="has_bought", slot_type=Book, key_name="id", keyed=False)
 
         super().__post_init__(**kwargs)
 
 
 # Enumerations
 class Genre(EnumDefinitionImpl):
-    """
-    The genre of a book.
-    """
+
     Fantasy = PermissibleValue(text="Fantasy")
     Crime = PermissibleValue(text="Crime")
     Thriller = PermissibleValue(text="Thriller")
@@ -361,7 +259,6 @@ class Genre(EnumDefinitionImpl):
 
     _defn = EnumDefinition(
         name="Genre",
-        description="The genre of a book.",
     )
 
     @classmethod
@@ -376,10 +273,10 @@ class slots:
     pass
 
 slots.id = Slot(uri=BOOKSTORE.id, name="id", curie=BOOKSTORE.curie('id'),
-                   model_uri=BOOKSTORE.id, domain=None, range=URIRef)
+                   model_uri=BOOKSTORE.id, domain=None, range=str)
 
 slots.created_at = Slot(uri=BOOKSTORE.created_at, name="created_at", curie=BOOKSTORE.curie('created_at'),
-                   model_uri=BOOKSTORE.created_at, domain=None, range=Optional[Union[str, XSDDateTime]])
+                   model_uri=BOOKSTORE.created_at, domain=None, range=Union[str, XSDDateTime])
 
 slots.name = Slot(uri=BOOKSTORE.name, name="name", curie=BOOKSTORE.curie('name'),
                    model_uri=BOOKSTORE.name, domain=None, range=str)
@@ -398,28 +295,13 @@ slots.ISBN = Slot(uri=BOOKSTORE.ISBN, name="ISBN", curie=BOOKSTORE.curie('ISBN')
                    pattern=re.compile(r'^[0-9]{13}$'))
 
 slots.authors = Slot(uri=BOOKSTORE.authors, name="authors", curie=BOOKSTORE.curie('authors'),
-                   model_uri=BOOKSTORE.authors, domain=None, range=Optional[Union[Union[str, AuthorId], list[Union[str, AuthorId]]]])
-
-slots.publisher = Slot(uri=BOOKSTORE.publisher, name="publisher", curie=BOOKSTORE.curie('publisher'),
-                   model_uri=BOOKSTORE.publisher, domain=None, range=Optional[Union[str, PublisherId]])
+                   model_uri=BOOKSTORE.authors, domain=None, range=Union[Union[dict, Author], list[Union[dict, Author]]])
 
 slots.genre = Slot(uri=BOOKSTORE.genre, name="genre", curie=BOOKSTORE.curie('genre'),
                    model_uri=BOOKSTORE.genre, domain=None, range=Union[str, "Genre"])
 
-slots.reviews = Slot(uri=BOOKSTORE.reviews, name="reviews", curie=BOOKSTORE.curie('reviews'),
-                   model_uri=BOOKSTORE.reviews, domain=None, range=Optional[Union[Union[str, ReviewId], list[Union[str, ReviewId]]]])
-
 slots.books_published = Slot(uri=BOOKSTORE.books_published, name="books_published", curie=BOOKSTORE.curie('books_published'),
-                   model_uri=BOOKSTORE.books_published, domain=None, range=Optional[Union[Union[str, BookId], list[Union[str, BookId]]]])
+                   model_uri=BOOKSTORE.books_published, domain=None, range=Optional[Union[Union[dict, Book], list[Union[dict, Book]]]])
 
 slots.has_bought = Slot(uri=BOOKSTORE.has_bought, name="has_bought", curie=BOOKSTORE.curie('has_bought'),
-                   model_uri=BOOKSTORE.has_bought, domain=None, range=Optional[Union[Union[str, BookId], list[Union[str, BookId]]]])
-
-slots.user = Slot(uri=BOOKSTORE.user, name="user", curie=BOOKSTORE.curie('user'),
-                   model_uri=BOOKSTORE.user, domain=None, range=Union[str, UserId])
-
-slots.score = Slot(uri=BOOKSTORE.score, name="score", curie=BOOKSTORE.curie('score'),
-                   model_uri=BOOKSTORE.score, domain=None, range=int)
-
-slots.review_text = Slot(uri=BOOKSTORE.review_text, name="review_text", curie=BOOKSTORE.curie('review_text'),
-                   model_uri=BOOKSTORE.review_text, domain=None, range=Optional[str])
+                   model_uri=BOOKSTORE.has_bought, domain=None, range=Optional[Union[Union[dict, Book], list[Union[dict, Book]]]])

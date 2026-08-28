@@ -8,20 +8,16 @@ anyio==4.14.2
     # via starlette
 fastapi==0.141.1
     # via link-ml-demo (pyproject.toml)
-linkml-runtime==1.11.1
-    # via link-ml-demo (pyproject.toml)
+idna==3.18
+    # via anyio
 psycopg==3.3.3
     # via link-ml-demo (pyproject.toml)
 psycopg-binary==3.3.3
-    # via psycopg (pyproject.toml)
-idna==3.18
-    # via anyio
+    # via psycopg
 pydantic==2.13.4
     # via fastapi
 pydantic-core==2.46.4
     # via pydantic
-ruff==0.16.3
-    # via link-ml-demo (pyproject.toml)
 sqlalchemy==2.0.52
     # via link-ml-demo (pyproject.toml)
 starlette==1.6.0
@@ -30,8 +26,10 @@ typing-extensions==4.16.0
     # via
     #   anyio
     #   fastapi
+    #   psycopg
     #   pydantic
     #   pydantic-core
+    #   sqlalchemy
     #   starlette
     #   typing-inspection
 typing-inspection==0.4.4

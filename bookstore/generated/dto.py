@@ -23,10 +23,9 @@ class BookCreate(DTOCreate):
 class BookRead(DTORead):
     title: str
     ISBN: str
-    authors: list[str]
     genre: Literal['Sci-fi', 'Fantasy', 'Crime', 'Thriller', 'Non-fiction', 'Biography']
     id: str
-    created_at: datetime | None = None
+    created_at: datetime
 
 
 @dataclass(frozen=True)
@@ -39,9 +38,9 @@ class AuthorCreate(DTOCreate):
 class AuthorRead(DTORead):
     name: str
     id: str
+    created_at: datetime
     gender: str | None = None
     date_of_birth: date | None = None
-    created_at: datetime | None = None
 
 
 @dataclass(frozen=True)
@@ -52,7 +51,7 @@ class PublisherCreate(DTOCreate):
 class PublisherRead(DTORead):
     name: str
     id: str
-    created_at: datetime | None = None
+    created_at: datetime
 
 
 @dataclass(frozen=True)
@@ -65,20 +64,7 @@ class UserCreate(DTOCreate):
 class UserRead(DTORead):
     name: str
     id: str
+    created_at: datetime
+    has_bought: list[str] | None = None
     gender: str | None = None
     date_of_birth: date | None = None
-    created_at: datetime | None = None
-
-
-@dataclass(frozen=True)
-class ReviewCreate(DTOCreate):
-    user: str
-    score: int
-    review_text: str | None = None
-
-@dataclass(frozen=True)
-class ReviewRead(DTORead):
-    score: int
-    id: str
-    review_text: str | None = None
-    created_at: datetime | None = None

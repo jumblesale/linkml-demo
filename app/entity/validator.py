@@ -1,10 +1,11 @@
-from dataclasses import Field, asdict, fields
+from dataclasses import Field, fields
 from re import Pattern
 from typing import Any
 
 from fastapi.exceptions import RequestValidationError
 
 from bookstore.generated.domain import Model, slots
+from bookstore.generated.dto import DTOCreate
 from bookstore.generated.schema import SchemaClassAddressable
 
 
@@ -12,15 +13,14 @@ class ModelValidator:
     def validate(
         self,
         schema_class: type[SchemaClassAddressable],
-        model: Model,
+        instance: Model | DTOCreate,
     ) -> None:
-        instance = asdict(model)
         errors = [
             error
-            for field in fields(model)
-            for error in self._validate_field(model, field)
+            for field in fields(instance)
+            for error in self._validate_field(instance, field)
         ]
-        errors.extend(self._validate_relationships(schema_class, model))
+        errors.extend(self._validate_relationships(schema_class, instance))
 
         if errors:
             raise RequestValidationError(
@@ -31,7 +31,7 @@ class ModelValidator:
     @staticmethod
     def _validate_relationships(
         schema_class: type[SchemaClassAddressable],
-        model: Model,
+        instance: Model | DTOCreate,
     ) -> list[dict[str, Any]]:
         return [
             ModelValidator._cardinality_error(
@@ -41,7 +41,7 @@ class ModelValidator:
             )
             for name, relationship in schema_class.relationships.items()
             if (minimum := relationship.minimum_cardinality) is not None
-            for value in (getattr(model, name, None),)
+            for value in (getattr(instance, name, None),)
             if ModelValidator._value_count(value) < minimum
         ]
 
@@ -65,10 +65,10 @@ class ModelValidator:
 
     def _validate_field(
         self,
-        model: Model,
+        instance: Model | DTOCreate,
         field: Field[Any],
     ) -> list[dict[str, Any]]:
-        value = getattr(model, field.name)
+        value = getattr(instance, field.name)
         pattern = self._pattern_for(field.name)
         if value is None or pattern is None:
             return []

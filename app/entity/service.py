@@ -1,11 +1,11 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from app.entity.id import IdGenerator, Identifier
-from bookstore.generated.dto import DTOCreate, DTORead
-from bookstore.generated.schema import SchemaClassAddressable
+from app.entity.id import Identifier, IdGenerator
 from app.entity.mappers import DtoDomainConverter
 from app.entity.repository import EntityRepository
 from app.entity.validator import ModelValidator
+from bookstore.generated.dto import DTOCreate, DTORead
+from bookstore.generated.schema import SchemaClassAddressable
 
 
 class EntityService:
@@ -26,11 +26,12 @@ class EntityService:
         schema_class: type[SchemaClassAddressable],
         payload: DTOCreate,
     ) -> Identifier:
+        self.validator.validate(schema_class, payload)
         model = self.converter.to_domain(
             schema_class=schema_class,
             payload=payload,
             entity_id=(id := self.id_generator()),
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         )
         self.validator.validate(schema_class, model)
         self.repository.save(schema_class, model)

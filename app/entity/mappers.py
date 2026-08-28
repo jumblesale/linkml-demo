@@ -1,27 +1,37 @@
 from collections.abc import Collection
 from dataclasses import fields, is_dataclass
 from datetime import datetime
-from typing import Any, TypeVar, cast
+from typing import Any, TypeVar, cast, get_args, get_type_hints
+
+from linkml_runtime.utils.metamodelcore import XSDDateTime
 
 from bookstore.generated.domain import Model as DomainModel
 from bookstore.generated.dto import DTOCreate, DTORead
 from bookstore.generated.entity import Base
 from bookstore.generated.schema import SchemaClassAddressable
 
-
 Target = TypeVar("Target")
 
 
-def _entity_value(value: Any, field_name: str | None = None) -> Any:
+def _entity_value(value: Any, source_type: Any) -> Any:
     if isinstance(value, list):
-        return [_entity_value(item, field_name) for item in value]
-    if field_name == "created_at" and isinstance(value, str):
+        return [_entity_value(item, source_type) for item in value]
+    if isinstance(value, str) and (
+        _contains_type(source_type, XSDDateTime)
+    ):
         return datetime.fromisoformat(str(value))
     if (text := getattr(value, "text", None)) is not None:
         return text
     if (code := getattr(value, "code", None)) is not None:
-        return _entity_value(code)
+        return _entity_value(code, source_type)
     return value
+
+
+def _contains_type(annotation: Any, expected_type: type[Any]) -> bool:
+    return annotation is expected_type or any(
+        _contains_type(argument, expected_type)
+        for argument in get_args(annotation)
+    )
 
 
 def map_fields(
@@ -40,10 +50,15 @@ def map_fields(
         if is_dataclass(source)
         else fields(cast(Any, target_class))
     )
+    source_field_types = (
+        get_type_hints(type(source))
+        if is_dataclass(source)
+        else {}
+    )
     values = {
         field.name: _entity_value(
             getattr(source, field.name),
-            field.name,
+            source_field_types.get(field.name),
         )
         for field in source_fields
         if field.name in target_fields
