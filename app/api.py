@@ -19,10 +19,10 @@ class ConflictResponse(BaseModel):
     field: str
 
 def _schema_classes() -> list[type[SchemaClassAddressable]]:
-    return [
+    return sorted([
         schema_class
         for schema_class in SchemaClassAddressable.__subclasses__()
-    ]
+    ], key=lambda schema_class: schema_class.__name__)
 
 class Api:
     def __init__(

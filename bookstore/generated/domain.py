@@ -1,5 +1,5 @@
 # Auto generated from bookstore.yaml by pythongen.py version: 0.0.1
-# Generation date: 2026-08-28T10:20:25
+# Generation date: 2026-08-28T10:26:41
 # Schema: bookstore
 #
 # id: https://example.org/bookstore
