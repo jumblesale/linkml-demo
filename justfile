@@ -12,3 +12,5 @@ test:
 
 run:
     uv run uvicorn app.app:fast_api --reload
+
+rerun: db-clear run
