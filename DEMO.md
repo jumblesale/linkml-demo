@@ -1,5 +1,3 @@
-# DEMO
-
 # LinkML Demonstration
 
 ## Existing app
