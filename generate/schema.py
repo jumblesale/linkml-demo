@@ -37,7 +37,7 @@ def _template(template_file: str) -> Template:
 def _render_sql_alchemy(schema_path: Path):
     generator = SQLAlchemyGenerator(schema=schema_path)
     (MODULE_PATH / "generated/entity.py").write_text(
-        generator.generate_sqla(template=TemplateEnum.DECLARATIVE_2X)
+        generator.generate_sqla(template=TemplateEnum.DECLARATIVE)
     )
 
 

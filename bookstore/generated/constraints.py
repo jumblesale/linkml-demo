@@ -2,7 +2,6 @@ from sqlalchemy import UniqueConstraint
 
 from bookstore.generated.entity import (
     Book,
-    Publisher,
 )
 
 
@@ -17,11 +16,5 @@ def apply_constraints() -> None:
         UniqueConstraint(
             "ISBN",
             name="uq_book_isbn",
-        ),
-    )
-    Publisher.__table__.append_constraint(
-        UniqueConstraint(
-            "name",
-            name="uq_publisher_name",
         ),
     )

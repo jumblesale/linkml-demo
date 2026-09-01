@@ -16,13 +16,14 @@ class DTORead(DTO): ...
 class BookCreate(DTOCreate):
     title: str
     ISBN: str
-    authors: list[str]
+    author: str
     genre: Literal['Sci-fi', 'Fantasy', 'Crime', 'Thriller', 'Non-fiction', 'Biography']
 
 @dataclass(frozen=True)
 class BookRead(DTORead):
     title: str
     ISBN: str
+    author: str
     genre: Literal['Sci-fi', 'Fantasy', 'Crime', 'Thriller', 'Non-fiction', 'Biography']
     id: str
     created_at: datetime
@@ -41,17 +42,6 @@ class AuthorRead(DTORead):
     created_at: datetime
     gender: str | None = None
     date_of_birth: date | None = None
-
-
-@dataclass(frozen=True)
-class PublisherCreate(DTOCreate):
-    name: str
-
-@dataclass(frozen=True)
-class PublisherRead(DTORead):
-    name: str
-    id: str
-    created_at: datetime
 
 
 @dataclass(frozen=True)

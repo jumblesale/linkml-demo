@@ -10,12 +10,12 @@ from bookstore.generated.entity import Base
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
+    apply_constraints()
     Base.metadata.create_all(bind=engine)
     yield
 
 
 fast_api = FastAPI(title="Bookstore API", lifespan=lifespan)
-apply_constraints()
 api = Api(
     app=fast_api,
     service_dependency=entity_service,

@@ -75,22 +75,45 @@ class DtoDomainConverter:
         payload: DTOCreate,
         entity_id: str,
         created_at: datetime | None = None,
+        **overrides: Any,
     ) -> DomainModel:
         return map_fields(
             source=payload,
             target_class=schema_class.model_class,
             id=entity_id,
             created_at=created_at,
+            **overrides,
         )
+
+    @staticmethod
+    def _relationship_id(value: Any) -> str:
+        if isinstance(value, str):
+            return value
+        if hasattr(value, "id"):
+            return str(value.id)
+        if isinstance(value, dict):
+            return str(value.get("id"))
+        raise TypeError(f"Cannot convert relationship value {value!r} to an id")
 
     def to_dto(
         self,
         schema_class: type[SchemaClassAddressable],
         domain: DomainModel,
     ) -> DTORead:
+        overrides = {}
+        for name, relationship in schema_class.relationships.items():
+            if not hasattr(domain, name):
+                continue
+            value = getattr(domain, name, None)
+            if value is None:
+                continue
+            values = value if relationship.multivalued else [value]
+            ids = [self._relationship_id(item) for item in values]
+            overrides[name] = ids if relationship.multivalued else ids[0]
         return map_fields(
             source=domain,
             target_class=schema_class.read_model,
+            **overrides,
         )
 
 
@@ -139,8 +162,23 @@ class DomainEntityConverter:
             if value is None:
                 continue
             values = value if relationship.multivalued else [value]
-            ids = [related_entity.id for related_entity in values]
-            overrides[name] = ids if relationship.multivalued else ids[0]
+            target_schema_class = next(
+                (
+                    candidate
+                    for candidate in SchemaClassAddressable.__subclasses__()
+                    if candidate.__name__ == relationship.target_class_name
+                ),
+                None,
+            )
+            if target_schema_class is None:
+                continue
+            related_models = [
+                self.to_domain(target_schema_class, related_entity)
+                for related_entity in values
+            ]
+            overrides[name] = (
+                related_models if relationship.multivalued else related_models[0]
+            )
         return map_fields(
             source=entity,
             target_class=schema_class.model_class,

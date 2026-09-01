@@ -1,11 +1,12 @@
 [project]
 name = "link-ml-demo"
 version = "0.1.0"
-description = "Add your description here"
+description = "A demo of a LinkML API"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi==0.141.1",
+    "httpx2>=2.12.0",
     "psycopg[binary]==3.3.3",
     "sqlalchemy==2.0.52",
 ]
@@ -17,4 +18,5 @@ dev = [
     "linkml-runtime==1.11.1",
     "uvicorn[standard]>=0.52.4",
     "ruff==0.16.3",
+    "pytest==9.1.1",
 ]

@@ -21,6 +21,42 @@ class EntityService:
         self.id_generator = id_generator
         self.validator = validator
 
+    def _relationship_overrides(
+        self,
+        schema_class: type[SchemaClassAddressable],
+        payload: DTOCreate,
+    ) -> dict[str, object]:
+        overrides: dict[str, object] = {}
+        for name, relationship in schema_class.relationships.items():
+            if not hasattr(payload, name):
+                continue
+            relationship_value = getattr(payload, name)
+            if relationship_value is None:
+                continue
+            target_schema_class = self.repository._target_schema_class(
+                relationship.target_class_name,
+            )
+            values = relationship_value if relationship.multivalued else [relationship_value]
+            related_models = [
+                self.repository.find_by_id(target_schema_class, str(value))
+                for value in values
+            ]
+            if any(model is None for model in related_models):
+                missing = next(
+                    str(value)
+                    for value, model in zip(values, related_models, strict=True)
+                    if model is None
+                )
+                raise self.repository._find_related_entity(
+                    name,
+                    target_schema_class,
+                    missing,
+                )
+            overrides[name] = (
+                related_models if relationship.multivalued else related_models[0]
+            )
+        return overrides
+
     def create(
         self,
         schema_class: type[SchemaClassAddressable],
@@ -32,6 +68,7 @@ class EntityService:
             payload=payload,
             entity_id=(id := self.id_generator()),
             created_at=datetime.now(UTC),
+            **self._relationship_overrides(schema_class, payload),
         )
         self.validator.validate(schema_class, model)
         self.repository.save(schema_class, model)

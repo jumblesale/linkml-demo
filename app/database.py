@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.entity.repository import EntityRepository
+from bookstore.generated.constraints import apply_constraints
 from bookstore.generated.entity import Base
 
 DATABASE_URL = "postgresql+psycopg://admin:password@localhost:5432/bookstore"
@@ -36,6 +37,7 @@ def clear_database() -> None:
     with engine.begin() as connection:
         connection.exec_driver_sql("DROP SCHEMA public CASCADE")
         connection.exec_driver_sql("CREATE SCHEMA public")
+    apply_constraints()
     Base.metadata.create_all(bind=engine)
 
 

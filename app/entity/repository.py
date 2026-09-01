@@ -1,19 +1,20 @@
+from typing import cast
+
 from sqlalchemy import UniqueConstraint, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.schema import Table
-from typing import cast
 
-from bookstore.generated.domain import Model as DomainModel
-from bookstore.generated.entity import Base
-from bookstore.generated.schema import RelationshipMetadata, SchemaClassAddressable
-from app.entity.id import Identifier
-from app.entity.mappers import DomainEntityConverter
 from app.entity.exceptions import (
     EntityNotFound,
     RelatedEntityNotFound,
     UniqueConstraintViolation,
 )
+from app.entity.id import Identifier
+from app.entity.mappers import DomainEntityConverter
+from bookstore.generated.domain import Model as DomainModel
+from bookstore.generated.entity import Base
+from bookstore.generated.schema import RelationshipMetadata, SchemaClassAddressable
 
 
 class EntityRepository:
@@ -45,9 +46,9 @@ class EntityRepository:
         schema_class: type[SchemaClassAddressable],
         entity_id: Identifier,
     ) -> None:
-        existing_entity = self.session.get(
-            schema_class.entity_class,
-            entity_id,
+        existing_entity = self._find_by_external_id(
+            schema_class=schema_class,
+            entity_id=entity_id,
         )
         if existing_entity is None:
             raise EntityNotFound(schema_class.entity_name(), entity_id)
@@ -76,7 +77,7 @@ class EntityRepository:
         self,
         name: str,
         relationship: RelationshipMetadata,
-        value: Identifier | list[Identifier],
+        value: Identifier | list[Identifier] | DomainModel | list[DomainModel],
     ) -> object:
         target_schema_class = self._target_schema_class(
             relationship.target_class_name
@@ -86,7 +87,7 @@ class EntityRepository:
             self._find_related_entity(
                 name,
                 target_schema_class,
-                related_value,
+                self._related_identifier(related_value),
             )
             for related_value in values
         ]
@@ -96,19 +97,34 @@ class EntityRepository:
             else related_entities[0]
         )
 
+    @staticmethod
+    def _related_identifier(value: Identifier | DomainModel) -> Identifier:
+        return value.id if isinstance(value, DomainModel) else str(value)
+
     def _find_related_entity(
         self,
         relationship_name: str,
         target_schema_class: type[SchemaClassAddressable],
         entity_id: Identifier,
     ) -> Base:
-        entity = self.session.get(
-            target_schema_class.entity_class,
-            str(entity_id),
+        entity = self._find_by_external_id(
+            schema_class=target_schema_class,
+            entity_id=str(entity_id),
         )
         if entity is None:
             raise RelatedEntityNotFound(relationship_name, str(entity_id))
         return entity
+
+    def _find_by_external_id(
+        self,
+        schema_class: type[SchemaClassAddressable],
+        entity_id: Identifier,
+    ) -> Base | None:
+        return self.session.execute(
+            select(schema_class.entity_class).where(
+                schema_class.entity_class.id == entity_id,
+            )
+        ).scalar_one_or_none()
 
     @staticmethod
     def _target_schema_class(
@@ -155,7 +171,10 @@ class EntityRepository:
         schema_class: type[SchemaClassAddressable],
         entity_id: Identifier,
     ) -> DomainModel | None:
-        entity = self.session.get(schema_class.entity_class, entity_id)
+        entity = self._find_by_external_id(
+            schema_class=schema_class,
+            entity_id=entity_id,
+        )
         if entity is None:
             return None
         return self.converter.to_domain(schema_class, entity)
