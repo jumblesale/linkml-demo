@@ -140,7 +140,7 @@ slots:
     required: false
     annotations:
       write_model: false
-      read_model: false
+      read_model: true
 
   has_bought:
     description: A collection of books which this user has bought.

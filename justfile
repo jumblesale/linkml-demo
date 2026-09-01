@@ -7,5 +7,8 @@ generate: && db-clear
 db-clear:
     uv run python -m app.database --clear
 
+test:
+    uv run pytest
+
 run:
     uv run uvicorn app.app:fast_api --reload

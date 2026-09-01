@@ -40,6 +40,7 @@ class AuthorRead(DTORead):
     name: str
     id: str
     created_at: datetime
+    books_published: list[str] | None = None
     gender: str | None = None
     date_of_birth: date | None = None
 

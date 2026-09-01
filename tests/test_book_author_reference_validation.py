@@ -83,3 +83,9 @@ def test_api_can_create_book_with_author_id_from_previous_author_create():
     )
 
     assert book_response.status_code == 201
+
+    book_id = book_response.headers["Location"].rsplit("/", 1)[-1]
+    author_read_response = client.get(f"/authors/{author_id}")
+
+    assert author_read_response.status_code == 200
+    assert author_read_response.json()["books_published"] == [book_id]

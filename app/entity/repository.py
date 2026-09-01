@@ -12,9 +12,13 @@ from app.entity.exceptions import (
 )
 from app.entity.id import Identifier
 from app.entity.mappers import DomainEntityConverter
+from app.entity.relationships import reverse_relationships_for
 from bookstore.generated.domain import Model as DomainModel
 from bookstore.generated.entity import Base
-from bookstore.generated.schema import RelationshipMetadata, SchemaClassAddressable
+from bookstore.generated.schema import (
+    RelationshipMetadata,
+    SchemaClassAddressable,
+)
 
 
 class EntityRepository:
@@ -156,7 +160,40 @@ class EntityRepository:
                 return next(iter(constraint.columns)).name
         return constraint_name or "unknown"
 
-    def find_all(
+    def _hydrate_reverse_relationships(
+        self,
+        schema_class: type[SchemaClassAddressable],
+        model: DomainModel,
+    ) -> DomainModel:
+        for related_schema_class, forward_ref_name, reverse_field_name in (
+            reverse_relationships_for(schema_class)
+        ):
+            related_models = self._find_all_without_hydration(related_schema_class)
+            related_values = [
+                related_model
+                for related_model in related_models
+                if self._matches_reference(related_model, forward_ref_name, model.id)
+            ]
+            if related_values:
+                setattr(model, reverse_field_name, related_values)
+        return model
+
+    @staticmethod
+    def _matches_reference(
+        model: DomainModel, reference_field: str, target_id: str
+    ) -> bool:
+        value = getattr(model, reference_field, None)
+        if value is None:
+            return False
+        # Handle single reference
+        if hasattr(value, "id"):
+            return value.id == target_id
+        # Handle multivalued references
+        if isinstance(value, list):
+            return any(hasattr(item, "id") and item.id == target_id for item in value)
+        return False
+
+    def _find_all_without_hydration(
         self,
         schema_class: type[SchemaClassAddressable],
     ) -> list[DomainModel]:
@@ -164,6 +201,16 @@ class EntityRepository:
         return [
             self.converter.to_domain(schema_class, entity)
             for entity in entities
+        ]
+
+    def find_all(
+        self,
+        schema_class: type[SchemaClassAddressable],
+    ) -> list[DomainModel]:
+        models = self._find_all_without_hydration(schema_class)
+        return [
+            self._hydrate_reverse_relationships(schema_class, model)
+            for model in models
         ]
 
     def find_by_id(
@@ -177,4 +224,5 @@ class EntityRepository:
         )
         if entity is None:
             return None
-        return self.converter.to_domain(schema_class, entity)
+        model = self.converter.to_domain(schema_class, entity)
+        return self._hydrate_reverse_relationships(schema_class, model)
