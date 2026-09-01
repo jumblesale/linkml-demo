@@ -28,24 +28,6 @@ class Model(Base):
     
 
 
-class AuthorBooksPublished(Base):
-    """
-    None
-    """
-    __tablename__ = 'Author_books_published'
-
-    Author_uid = Column(Integer(), ForeignKey('Author.uid'), primary_key=True)
-    books_published_uid = Column(Integer(), ForeignKey('Book.uid'), primary_key=True)
-    
-
-    def __repr__(self):
-        return f"Author_books_published(Author_uid={self.Author_uid},books_published_uid={self.books_published_uid},)"
-
-
-
-    
-
-
 class UserHasBought(Base):
     """
     None
@@ -103,43 +85,10 @@ class Book(Model):
     genre = Column(Enum('Sci-fi', 'Fantasy', 'Crime', 'Thriller', 'Non-fiction', 'Biography', name='Genre'), nullable=False )
     id = Column(Text(), nullable=False )
     created_at = Column(DateTime(), nullable=False )
-    author_uid = Column(Integer(), ForeignKey('Author.uid'), nullable=False )
-    author = relationship("Author", uselist=False, foreign_keys=[author_uid])
     
 
     def __repr__(self):
-        return f"Book(uid={self.uid},title={self.title},ISBN={self.ISBN},genre={self.genre},id={self.id},created_at={self.created_at},author_uid={self.author_uid},)"
-
-
-
-    
-    # Using concrete inheritance: see https://docs.sqlalchemy.org/en/14/orm/inheritance.html
-    __mapper_args__ = {
-        'concrete': True
-    }
-    
-
-
-class Author(Person):
-    """
-    A human who has authored books sold by the bookstore.
-    """
-    __tablename__ = 'Author'
-
-    uid = Column(Integer(), primary_key=True, autoincrement=True , nullable=False )
-    name = Column(Text(), nullable=False )
-    gender = Column(Text())
-    date_of_birth = Column(Date())
-    id = Column(Text(), nullable=False )
-    created_at = Column(DateTime(), nullable=False )
-    
-    
-    # ManyToMany
-    books_published = relationship( "Book", secondary="Author_books_published")
-    
-
-    def __repr__(self):
-        return f"Author(uid={self.uid},name={self.name},gender={self.gender},date_of_birth={self.date_of_birth},id={self.id},created_at={self.created_at},)"
+        return f"Book(uid={self.uid},title={self.title},ISBN={self.ISBN},genre={self.genre},id={self.id},created_at={self.created_at},)"
 
 
 
@@ -158,6 +107,7 @@ class User(Person):
     __tablename__ = 'User'
 
     uid = Column(Integer(), primary_key=True, autoincrement=True , nullable=False )
+    email = Column(Text())
     name = Column(Text(), nullable=False )
     gender = Column(Text())
     date_of_birth = Column(Date())
@@ -170,7 +120,7 @@ class User(Person):
     
 
     def __repr__(self):
-        return f"User(uid={self.uid},name={self.name},gender={self.gender},date_of_birth={self.date_of_birth},id={self.id},created_at={self.created_at},)"
+        return f"User(uid={self.uid},email={self.email},name={self.name},gender={self.gender},date_of_birth={self.date_of_birth},id={self.id},created_at={self.created_at},)"
 
 
 

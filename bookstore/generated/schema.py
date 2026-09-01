@@ -5,7 +5,6 @@ from bookstore.generated.domain import (
     Model as ModelModel,
     Person as PersonModel,
     Book as BookModel,
-    Author as AuthorModel,
     User as UserModel,
 )
 
@@ -13,7 +12,6 @@ from bookstore.generated.entity import (
     Model as ModelEntity,
     Person as PersonEntity,
     Book as BookEntity,
-    Author as AuthorEntity,
     User as UserEntity,
 )
 
@@ -22,8 +20,6 @@ from bookstore.generated.dto import (
     DTORead,
     BookRead,
     BookCreate,
-    AuthorRead,
-    AuthorCreate,
     UserRead,
     UserCreate,
 )
@@ -74,30 +70,10 @@ class Book(SchemaClassAddressable):
     model_class = BookModel
     entity_class = BookEntity
     relationships = {
-        "author": RelationshipMetadata(
-            target_class_name="Author",
-            multivalued=False,
-            minimum_cardinality=None,
-        ),
     }
     write_model = BookCreate
     read_model = BookRead
     api_resource_name = "books"
-
-@dataclass(frozen=True)
-class Author(SchemaClassAddressable):
-    model_class = AuthorModel
-    entity_class = AuthorEntity
-    relationships = {
-        "books_published": RelationshipMetadata(
-            target_class_name="Book",
-            multivalued=True,
-            minimum_cardinality=0,
-        ),
-    }
-    write_model = AuthorCreate
-    read_model = AuthorRead
-    api_resource_name = "authors"
 
 @dataclass(frozen=True)
 class User(SchemaClassAddressable):

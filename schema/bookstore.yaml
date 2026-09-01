@@ -57,7 +57,12 @@ classes:
     annotations:
       api_resource_name: users
     slots:
+      - email
       - has_bought
+    unique_keys:
+      email:
+        unique_key_slots:
+          - email
 
 slots:
   id:
@@ -151,6 +156,13 @@ slots:
     inlined: false
     annotations:
       write_model: false
+      read_model: true
+    
+  email:
+    description: The email of a registered user
+    range: string
+    annotations:
+      write_model: true
       read_model: true
 
 enums:

@@ -16,38 +16,21 @@ class DTORead(DTO): ...
 class BookCreate(DTOCreate):
     title: str
     ISBN: str
-    author: str
     genre: Literal['Sci-fi', 'Fantasy', 'Crime', 'Thriller', 'Non-fiction', 'Biography']
 
 @dataclass(frozen=True)
 class BookRead(DTORead):
     title: str
     ISBN: str
-    author: str
     genre: Literal['Sci-fi', 'Fantasy', 'Crime', 'Thriller', 'Non-fiction', 'Biography']
     id: str
     created_at: datetime
 
 
 @dataclass(frozen=True)
-class AuthorCreate(DTOCreate):
-    name: str
-    gender: str | None = None
-    date_of_birth: date | None = None
-
-@dataclass(frozen=True)
-class AuthorRead(DTORead):
-    name: str
-    id: str
-    created_at: datetime
-    books_published: list[str] | None = None
-    gender: str | None = None
-    date_of_birth: date | None = None
-
-
-@dataclass(frozen=True)
 class UserCreate(DTOCreate):
     name: str
+    email: str | None = None
     gender: str | None = None
     date_of_birth: date | None = None
 
@@ -56,6 +39,7 @@ class UserRead(DTORead):
     name: str
     id: str
     created_at: datetime
+    email: str | None = None
     has_bought: list[str] | None = None
     gender: str | None = None
     date_of_birth: date | None = None

@@ -1,5 +1,5 @@
 # Auto generated from bookstore.yaml by pythongen.py version: 0.0.1
-# Generation date: 2026-09-01T10:36:30
+# Generation date: 2026-09-01T12:49:47
 # Schema: bookstore
 #
 # id: https://example.org/bookstore
@@ -152,7 +152,6 @@ class Book(Model):
     created_at: Union[str, XSDDateTime] = None
     title: str = None
     ISBN: str = None
-    author: Union[dict, "Author"] = None
     genre: Union[str, "Genre"] = None
 
     def __post_init__(self, *_: str, **kwargs: Any):
@@ -166,38 +165,10 @@ class Book(Model):
         if not isinstance(self.ISBN, str):
             self.ISBN = str(self.ISBN)
 
-        if self._is_empty(self.author):
-            self.MissingRequiredField("author")
-        if not isinstance(self.author, Author):
-            self.author = Author(**as_dict(self.author))
-
         if self._is_empty(self.genre):
             self.MissingRequiredField("genre")
         if not isinstance(self.genre, Genre):
             self.genre = Genre(self.genre)
-
-        super().__post_init__(**kwargs)
-
-
-@dataclass(repr=False)
-class Author(Person):
-    """
-    A human who has authored books sold by the bookstore.
-    """
-    _inherited_slots: ClassVar[list[str]] = []
-
-    class_class_uri: ClassVar[URIRef] = BOOKSTORE["Author"]
-    class_class_curie: ClassVar[str] = "bookstore:Author"
-    class_name: ClassVar[str] = "Author"
-    class_model_uri: ClassVar[URIRef] = BOOKSTORE.Author
-
-    id: str = None
-    created_at: Union[str, XSDDateTime] = None
-    name: str = None
-    books_published: Optional[Union[Union[dict, Book], list[Union[dict, Book]]]] = empty_list()
-
-    def __post_init__(self, *_: str, **kwargs: Any):
-        self._normalize_inlined_as_list(slot_name="books_published", slot_type=Book, key_name="id", keyed=False)
 
         super().__post_init__(**kwargs)
 
@@ -217,9 +188,13 @@ class User(Person):
     id: str = None
     created_at: Union[str, XSDDateTime] = None
     name: str = None
+    email: Optional[str] = None
     has_bought: Optional[Union[Union[dict, Book], list[Union[dict, Book]]]] = empty_list()
 
     def __post_init__(self, *_: str, **kwargs: Any):
+        if self.email is not None and not isinstance(self.email, str):
+            self.email = str(self.email)
+
         self._normalize_inlined_as_dict(slot_name="has_bought", slot_type=Book, key_name="id", keyed=False)
 
         super().__post_init__(**kwargs)
@@ -270,14 +245,11 @@ slots.ISBN = Slot(uri=BOOKSTORE.ISBN, name="ISBN", curie=BOOKSTORE.curie('ISBN')
                    model_uri=BOOKSTORE.ISBN, domain=None, range=str,
                    pattern=re.compile(r'^[0-9]{13}$'))
 
-slots.author = Slot(uri=BOOKSTORE.author, name="author", curie=BOOKSTORE.curie('author'),
-                   model_uri=BOOKSTORE.author, domain=None, range=Union[dict, Author])
-
 slots.genre = Slot(uri=BOOKSTORE.genre, name="genre", curie=BOOKSTORE.curie('genre'),
                    model_uri=BOOKSTORE.genre, domain=None, range=Union[str, "Genre"])
 
-slots.books_published = Slot(uri=BOOKSTORE.books_published, name="books_published", curie=BOOKSTORE.curie('books_published'),
-                   model_uri=BOOKSTORE.books_published, domain=None, range=Optional[Union[Union[dict, Book], list[Union[dict, Book]]]])
-
 slots.has_bought = Slot(uri=BOOKSTORE.has_bought, name="has_bought", curie=BOOKSTORE.curie('has_bought'),
                    model_uri=BOOKSTORE.has_bought, domain=None, range=Optional[Union[Union[dict, Book], list[Union[dict, Book]]]])
+
+slots.email = Slot(uri=BOOKSTORE.email, name="email", curie=BOOKSTORE.curie('email'),
+                   model_uri=BOOKSTORE.email, domain=None, range=Optional[str])
