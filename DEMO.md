@@ -1,3 +1,5 @@
+# DEMO
+
 # LinkML Demonstration
 
 ## Existing app
@@ -11,7 +13,7 @@
   - [ ] Annotations
   - [ ] Enumerations
 - [ ] Show the generated code
-  - [ ] Templates
+  - [ ] Jinja templates
   - [ ] domain.py
   - [ ] dto.py
   - [ ] entity.py
@@ -20,20 +22,25 @@
 - [ ] Run the app
   - [ ] [http://127.0.0.1:8000/docs#/](http://127.0.0.1:8000/docs#/)
   - [ ] [http://127.0.0.1:8000/redoc](http://127.0.0.1:8000/redoc)
-- [ ] Create a new author
-  - [ ] Show the location header being set
-  - [ ] Create a second author
-  - [ ] GET the created authors
-- [ ] Create a new book
-  - [ ] Show validation on ISBN, genre
-  - [ ] Add the author IDs to the payload
+- [ ] Create a book
+
+## Adding a slot
+- [ ] `git checkout 646a11c -- schema/bookstore.yaml`
+- [ ] Introduces ISBN slot with validation
+- [ ] Show the diff of the schema YAML
+- [ ] `just generate`
+- [ ] Show the diff of the generated files
+- [ ] `just run`
+- [ ] Create a book with an invalid ISBN
+
+## Uniqueness constraints
+- [ ] `git checkout 9284a5c -- schema/bookstore.yaml ; just rerun`
+- [ ] Introduces book unique keys
+- [ ] Create a book with conflicting title / ISBN
+
+## Adding a new entity
+- [ ] `git checkout 9a9e549 -- schema/bookstore.yaml ; just rerun`
+- [ ] Introduces Author entity
+- [ ] Create an author
+- [ ] Use the author ID to create a book
 - [ ] Create a second book
-  - [ ] Show the uniqueness constraint on ISBN, title
-
-
-## Adding an entity
-
-- [ ] Create a "Publisher" entity
-- [ ] Add slots for:
-  - [ ] publisher_name
-  - [ ] books_published
